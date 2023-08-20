@@ -1,5 +1,5 @@
 
-local Link = game:HttpGet("https://raw.githubusercontent.com/Gfgsbe63j/9dlao4c3a/main/fargt/"..game.PlaceId..".lua")
+local Link = game:HttpGet("https://raw.githubusercontent.com/Gfgsbe63j/9dlao4c3b/main/fargt/"..game.PlaceId..".lua")
 
 if Link then	
 	loadstring(Link)()
