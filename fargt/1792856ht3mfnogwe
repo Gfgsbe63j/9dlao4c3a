@@ -1,0 +1,2677 @@
+
+local success, result = pcall(function()
+
+    repeat wait() until Game:IsLoaded()
+    local bb=game:service'VirtualUser'
+    game:service'Players'.LocalPlayer.Idled:connect(function(antiafk2)bb:CaptureController()bb:ClickButton2(Vector2.new())
+    end)
+
+    ----------------[            UI NECESSARY            ]----------------
+
+    local Emojis = loadstring(game:HttpGet("https://raw.githubusercontent.com/Odrexyo/main/main/UI/Emojis.lua", true))()
+    local dislink = loadstring(game:HttpGet(('https://pastebin.com/raw/qVc2ft0D')))()
+    local Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/Gfgsbe63j/9dlao4c3b/main/1444.lua"))()
+    local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+    local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
+    local MarketplaceService = game:GetService("MarketplaceService")
+    local productInfo = MarketplaceService:GetProductInfo(game.PlaceId)
+    local gameName = productInfo.Name or "Unknow Game"
+    
+    ----------------[            UI NECESSARY            ]----------------
+    
+    ----------------[            FUNCTIONS            ]----------------
+
+    local function disp_time(time)
+        local days = math.floor(time / 86400)
+        local hours = math.floor((time % 86400) / 3600)
+        local minutes = math.floor((time % 3600) / 60)
+        local seconds = math.floor(time % 60)
+        local formattedTime
+        if days > 0 then
+            formattedTime = days.." Days, "..hours.." Hours, "..minutes.." Minutes"
+        elseif hours > 0 then
+            formattedTime = hours.." Hours, "..minutes.." Minutes, "..seconds.." Seconds"
+        else
+            formattedTime = minutes.." Minutes, "..seconds.." Seconds"
+        end
+        return formattedTime
+    end
+
+    local function formatTime(seconds)
+        local minutes = math.floor(seconds / 60)
+        local remainingSeconds = seconds % 60
+        return string.format("%d:%02d", minutes, remainingSeconds)
+    end
+
+    local function CreateTpPart(Mob)
+        local player = game.Players.LocalPlayer
+        local character = player.Character
+
+        if character then
+            local currentPosition = character.HumanoidRootPart.Position
+            local newPosition = Mob + Vector3.new(0, 80, 0)
+            character:SetPrimaryPartCFrame(CFrame.new(newPosition))
+            local platformPosition = newPosition - Vector3.new(0, 5, 0)
+
+            local platform = Instance.new("Part")
+            platform.Size = Vector3.new(10, 1, 10)
+            platform.Anchored = true
+            platform.Position = platformPosition
+            platform.BrickColor = BrickColor.new("Bright blue")
+            platform.Material = Enum.Material.Metal
+            platform.Parent = game.Workspace
+        end
+    end
+
+    local function formatNumberWithCommas(number)
+        local formatted = tostring(number)
+        local k = string.len(formatted)
+        while k > 3 do
+            formatted = string.sub(formatted,1,k - 3).."," .. string.sub(formatted, k - 2)
+            k = k - 3
+        end
+        return formatted
+    end
+
+    local DataModule = require(game.ReplicatedStorage.ModuleScripts.DairebStore2.LocalDairebStore2)
+    local PlayerDataStore = DataModule.GetDairebStoreAsync("MainData")
+    local PlayerPets = PlayerDataStore:GetData("Pets")
+    local PlayerItems = PlayerDataStore:GetData("Items")
+    local PlayerOrbs = PlayerDataStore:GetData("OrbsBreakdown")
+    local PlayerUpgrades = PlayerDataStore:GetData("Upgrades")
+    local PlayerTeams = PlayerDataStore:GetData("Teams")
+
+    local function getMedalAmount(medalName)
+        if PlayerItems[medalName] then
+            return PlayerItems[medalName][1].Amount
+        else
+            return "0"
+        end
+    end
+
+    function CenterText(text)
+        local totalWidth = 67
+        local padding = math.floor((totalWidth - #text) / 2)
+        local centeredText = string.rep(" ", padding) .. text .. string.rep(" ", padding)
+        return centeredText
+    end
+
+    local function formatNumber(number)
+        local suffixes = {"", "K", "M", "B", "T", "Qd"}
+        local index = 1
+        while number >= 1000 and index < #suffixes do
+            number = number / 1000
+            index = index + 1
+        end
+        return string.format(index == 1 and "%.2f" or "%.2f%s", number, suffixes[index])
+    end
+    
+    function getClass(Value)
+        if Value == 100 then
+            return "SSS"
+        elseif Value >= 97 and Value <= 99 then
+            return "SS"
+        elseif Value >= 90 and Value <= 96 then
+            return "S"
+        elseif Value >= 80 and Value <= 89 then
+            return "A"
+        elseif Value >= 60 and Value <= 79 then
+            return "B"
+        elseif Value >= 30 and Value <= 59 then
+            return "C"
+        elseif Value >= 10 and Value <= 29 then
+            return "D"
+        elseif Value >= 0 and Value <= 9 then
+            return "F"
+        end
+    end
+
+
+    local function comparePetsByRarity(a, b)
+        local rarityOrder = {
+            ["Cosmic"] = 1,
+            ["Mythical"] = 2,
+            ["Legendary"] = 3,
+            ["Epic"] = 4,
+            ["Rare"] = 5,
+            ["Common"] = 6
+        }
+        local rarityA = a:match("|%s+(%a+)$")
+        local rarityB = b:match("|%s+(%a+)$")
+        local orderA = rarityOrder[rarityA] or 7
+        local orderB = rarityOrder[rarityB] or 7
+        return orderA < orderB
+    end
+
+    function DeleteSkin(Name)
+        local args = {[1] = {[Name] = {[1] = 1}}}
+        game:GetService("ReplicatedStorage").Remote.Data.ScrapItems:FireServer(unpack(args))    
+    end
+
+
+    ----------------[            FUNCTIONS            ]----------------
+    
+
+
+    ----------------[           LOCALS          ]----------------
+
+    local Version = "v0.2b"
+    local SelectedID, selectedPet, selectedOrb, selectedOther, selectedWorld, RaidWorld, SelectedLocation, selectedRarity, maxDistance, PetDestName, RaidTeam, OrbTeam
+    local RaidLeaveMinutes = 0
+    local RaidLeaveSeconds = 0
+    local Remote = game:GetService("ReplicatedStorage").Remote
+    local RemotePets = Remote.Pets
+    local HeartBeat = game:GetService("RunService").Heartbeat
+    local LocalPlayer = game:GetService("Players").LocalPlayer
+    local hrp = LocalPlayer.Character.HumanoidRootPart
+    local playerId = tostring(LocalPlayer.UserId)
+    local TextService = game:GetService("TextService")
+    local selectedAmount = 1
+    local QuirksAmount = 1
+    getgenv().FuseMaxLvl = 110
+    getgenv().AutoRaiding = false
+    getgenv().AutoPortals = false
+
+    ----------------[MODULES]
+
+    local TalentHandler = require(game:GetService("ReplicatedStorage").ModuleScripts.Handlers.TalentHandler)
+    local AutoClickHandler = require(game:GetService("Players").LocalPlayer.PlayerGui.MainGui.MainGuiHandler.HUD.BottomButtons.Clicker)
+    local AbilityButton = game:GetService("Players").LocalPlayer.PlayerGui.MainGui.HUD.BottomButtons.AbilityButton
+
+    ----------------[MODULES]
+
+
+    ----------------[TABLES]
+
+    local line1 = {"Combatant1", "Combatant2", "Combatant3", "Frieza", "Ginyu"}
+    local line2 = {"Marine1", "Marine2", "MarineX", "Helmeppo", "AxeHand", "Mihawk"}
+    local line3 = {"Robot1", "Robot2", "Nomu", "MuscleMan", "GiantRobot", "Victor", "Todoroki"}
+    local line4 = {"Neji", "SandShinobi3", "SandShinobi2", "SandShinobi1", "Orochimaru"}
+    local line5 = {"Ndoul", "Daniel", "HolHorseBoss", "VanillaIceNormal", "Dio", "TheWorld"}
+    local line6 = {"Demon", "Wakuraba", "SpiderMother", "SpiderFather", "Rui"}
+    local line7 = {"BridgeCurse", "FlyCurse", "Finger", "Hanami", "FingerRaid", "BridgeCurse2", "FlyCurse2", "Mahito", "WoodBall"}
+    local line8 = {"Ikkaku","Izuru","Renji","Souhei", "Byakuya"}
+    local line9 = {"Bloster", "Bloster2", "Rammot", "Rammot2", "Cheeta", "Machine1", "Machine2", "Pitou","Meruem"}
+    local DBZNpc = {"Yellow Force", "Red Force", "Blue Force", "Genju", "Blizzeon"}
+    local OPNpc = {"Marine 1","Marine 2","Marine X","Harbormeister","Chopper"}
+    local MHANpc = {"Speed Bot", "Gunner Bot", "Victor", "Muscle Man", "Megabot", "Birdman"}
+    local NarutoNpc = {"Evil Ninja", "Ninja Captain", "Ninja General", "Forsaken One", "Snake Lord"}
+    local JojoNpc = {"Marcus", "Blind Guy", "Gunslinger", "Ice Cream", "Aluminium Dan", "Goldylocks"}
+    local DemonNpc = {"Wakuraba","Demon","Spider Mother","Spider Father","Spider Child"}
+    local JJKNpc = {"Fly Curse","Bridge Curse","Sewer Curse","Finger","Slime Curse","Hanarai","Cursed Finger","Masato"}
+    local BleachNpc = {"Yujiro","Taro","Misaki","Ryoichi","Shinya"}
+    local HXHNpc = {"Lobster", "Red Egg", "Ramiro", "Raging Lobster", "Chiara", "Raging Ramiro", "Orange Egg", "Raging Chiara", "Blue Egg", "Green Mining Rig", "Nekko", "Purple Egg", "Rusty Mining Rig", "Steel Mining Rig", "The King"}
+    local RaidBoss = {"Byakuya", "Renji", "Mahito", "Hanami", "Rui", "SpiderFather", "Dio", "Orochimaru", "Todoroki", "Mihawk", "Frieza", "Ginyu", "HolHorseBoss", "Neji", "Nomu", "AxeHand","Machine1", "Machine2", "Pitou","Meruem"}
+    local MobsTable = {}
+    local SelectedTable = {}
+    local SkinsSelect = {}
+    local WorldSpirit = {"OnePiece", "MHA", "Naruto", "Jojo", "DemonSlayer", "JJK", "Bleach", "HxH"}
+    local WorldsTable = {"Green Planet","Pirate Town","Hero Academy","Ninja Village","Bizarre Bazaar","Demon Forest", "Cursed City", "Spirit Town", "Land of Ants"}
+    local Orbs = {}
+    local Petss = {}
+    local MultiFuse = {}
+    local EnemyTable = {}
+    local selectedQuirk1st = {}
+    local selectedQuirk2nd = {}
+    local Quirks = {{ name = "Strong", value = "Dmg"},{ name = "Rich", value = "Coins"},{ name = "Collector", value = "Drops" },{ name = "Accurate", value = "Crit" },{ name = "Sorcerer", value = "Ability" },{ name = "Ability Charge", value = "Ability" },{ name = "Fast", value = "Spd"},{ name = "Genius", value = "LvlUp" },{ name = "Lucky", value = "Lucky" },{ name = "Teleport", value = "Teleport" },{ name = "Leprechaun", value = "Leprechaun" },{ name = "Thief", value = "Thief" },{ name = "Sniper", value = "Sniper" },{ name = "Giant", value = "Giant" },{ name = "Archmage", value = "Archmage" },{ name = "Assassin", value = "Assassin"},{ name = "Black Hole", value = "BlackHole" },{ name = "Celestial", value = "CelestialTorso"}}
+    local QuirkName = {}
+    local QuirkValue = {} 
+    local SelectedQuirkTier1st = {}
+    local SelectedQuirkTier2nd = {}
+    local HighTier = {"BlackHole", "Archmage", "Giant", "Sniper", "Thief", "Leprechaun", "Teleport", "Assassin","CelestialTorso"}
+    local SelectedRanks = {}
+    local itemNames = {"Tophat","NinjaMask","SwordBlack","SwordWhite","SwordViolet","SwordSlicer","SwordWater","PirateKing","HermitShell","Scythe","TyrantStaff","TripleScythe","Moustache","CapeRed","CapeGreen","CapeBlue","GlassesBlue","GlassesGreen","GlassesLove","GlassesGold","GlassesMeme","CapeRoyal","CapeGold","Sword","BuraSword","NinjaBand","HeadBandBlue","FaceHands","HeroHair","CurseSasuke","SSJGoku","ZoroFilm","TodorokiAlt","ZenitsuSleep","KakyoinAlt","DemonGiyu","Josuke","SuitApe","SageMode","BossShanks","AllMightYoung","GojoAlt","Sukuna","HatGreen","BackpackGreen","HatBlue","BackpackBlue","HatRed","BackpackRed","HatBlack","BackpackBlack","HatGold","BackpackGold","LeafFrog","ReindeerHat","Axe","AxeIce","AxeFire","GiantHelm","BeardBrown","BeardBlack","BeardWhite","BeardBlonde","GlovesRed","GlovesBlue","GlovesGreen","GlovesGold","GlovesFire","ShoesRed","ShoesWhite","ShoesBlack","ShoesGold","ShoesFire","UrahuraAlt","IchigoAlt","ShoulderPadGreen","ShoulderPadBlue","ShoulderPadGold","ShoulderPadFire","ShoulderPadMetal","ShoulderPadRed","Hammer","HammerCool","HammerIce","HornsBlack","Horn","Horns","HornsBroken","AntHatGreen","AntHatBlue","AntHatGold","AntHatFire","CatTailWhite","CatTailBrown","CatTailPink","CatTailBlack","AntTailGreen","AntTailBlue","AntTailGold","AntTailFire","Skateboard","KilluaAlt","GonBlack","WitchHatPurple","WitchHatBlack","Astolfo","PumpkinDark","Pumpkin","Aizen","Chainsaw","ZeroTwo","Tentacles","PunkShoes","Skullhat","FridayMask"}
+    getgenv().Config = {Client = {WalkSpeed = 32, JumpPower = 50},}
+    local SelectedFuse = {}
+    local CommonPets = {{ name = "Yancho", value = "Yamcha"},{ name = "Tenzuki", value = "Tien"},{ name = "Trueshot", value = "Usopp"},{ name = "Furin", value = "Chopper"},{ name = "Ruka-chan", value = "Uraraka"},{ name = "Ayako", value = "Asui"},{ name = "Ninten", value = "Tenten"},{ name = "Seraphina", value = "Sakura"},{ name = "Radiant Fist", value = "Johnatan"},{ name = "Dust Hound", value = "Iggy"},{ name = "Kaito", value = "Slayer1"},{ name = "Violet", value = "Slayer2"},{ name = "Riki", value = "Maki"},{ name = "Panda", value = "Panda"},{ name = "Slime", value = "Slime"},{ name = "Popstar", value = "Ai"},{ name = "Tank", value = "Chad"},{ name = "Maiden", value = "Orihime"},{name = "Little Hunter", value = "Zushi"},{name = "Medical Hunter", value = "Leorio"}}
+    local RarePets = {{ name = "Ryuken", value = "Krillin"},{ name = "Marini", value = "Nami"},{ name = "Shadow Heart", value = "Tokoyami"},{ name = "Uzumato", value = "KidNaruto"},{ name = "Red Sorcerer", value = "Avdol"},{ name = "Imoto", value = "Nezuko"},{ name = "Nozomi", value = "Nobara"},{ name = "Handy Man", value = "Shigaraki"},{ name = "Ryuto", value = "Uryu"},{name = "Revenge Hunter", value = "Kurapika"}}
+    local EpicPets = {{ name = "Echolo", value = "Piccolo"},{ name = "Gomu", value = "Luffy"},{ name = "Smasher", value = "Deku"},{ name = "Stone Guy", value = "Lee"},{ name = "Purple Hermit", value = "Joseph"},{ name = "Tuskaro", value = "Inosuke"},{ name = "Kiyomi", value = "Megumi"},{ name = "Snake Guy", value = "Orochimaru"},{ name = "Mizuki", value = "Rukia"},{name = "Clown Hunter", value = "Hisoka"}}
+    local LegendaryPets = {{ name = "Blitzel", value = "Vegeta"},{ name = "Kuroji", value = "Sanji"},{ name = "Blastion", value = "Bakugo"},{ name = "Byakuya", value = "Neji"},{ name = "Silverblade", value = "Polnareff"},{ name = "Kurojiro", value = "Tanjiro"},{ name = "Taro", value = "Todo"},{ name = "Kioken Black", value = "GokuBlack"},{ name = "Ayame", value = "Yoruichi"},{name = "King Hunter", value = "Netero"}}
+    local MythicalPets = {{ name = "Kioken", value = "Goku"},{ name = "Swordmaster", value = "Zoro"},{ name = "Pyroki", value = "Todoroki"},{ name = "Tomoe", value = "Sasuke"},{ name = "Kageyuki", value = "Kakyoin"},{ name = "Zephyr", value = "Zenitsu"},{ name = "Itakai", value = "Itadori"},{ name = "Strongest Swordsman", value = "Mihawk"},{ name = "Shinrei", value = "Ichigo"},{name = "Speed Hunter", value = "Killua"}}
+    local PetDeNames = {}
+    local PetDeValue = {}
+    local MythicalFuse = {"Goku","Zoro","Todoroki","Sasuke","Kakyoin","Zenitsu","Itadori","Mihawk", "Ichigo", "Killua"}
+    local LegendaryFuse = {"Vegeta","Sanji","Bakugo","Neji","Polnareff","Tanjiro","Todo","GokuBlack", "Yoruichi","Netero"}
+    local EpicFuse = {"Piccolo","Luffy","Deku","Lee","Joseph","Inosuke","Megumi","Orochimaru", "Rukia","Hisoka"}
+    local RareFuse = {"Krillin","Nami","Tokoyami","KidNaruto","Avdol","Nezuko","Nobara","Shigaraki", "Uryu","Kurapika"}
+    local CommonFuse = {"Yamcha", "Tien", "Usopp", "Chopper", "Uraraka", "Asui", "Tenten", "Sakura", "Johnatan", "Iggy", "Slayer1", "Slayer2", "Maki", "Panda", "Slime", "Ai", "Orihime", "Chad","Zushi", "Leorio"}
+    local FuseRarities = {}
+
+    ----------------[TABLES]
+
+
+    ----------------[BOOLS]
+
+    local Lock1 = false
+    local Lock2 = false
+    local Lock3 = false
+    local Lock4 = false
+    getgenv().AutoOpen = false
+
+    ----------------[BOOLS]
+
+
+    ----------------[           LOCALS          ]----------------
+    
+    
+
+    ----------------[            UI WINDOW/TABS            ]----------------
+
+    local Window = Fluent:CreateWindow({
+        Title = "Anime Champions",
+        SubTitle = "by Magenta"..Emojis.verified, 
+        TabWidth = 120,
+        Size = UDim2.fromOffset(480, 430),
+        Acrylic = false, 
+        Theme = "Amethyst",
+        MinimizeKey = Enum.KeyCode.LeftControl 
+    })
+    
+    local Tabs = {
+        FarmSettings = Window:AddTab({ Title = "Farm Settings", Icon = "rbxassetid://14732885049" }),
+        Main = Window:AddTab({ Title = "Main", Icon = "rbxassetid://14732885049" }),
+        Halloween = Window:AddTab({ Title = "Event", Icon = "rbxassetid://14732885049" }),
+        Tower = Window:AddTab({ Title = "Tower", Icon = "rbxassetid://14732886549" }),
+        Raids = Window:AddTab({ Title = "Raids", Icon = "rbxassetid://14740591165" }),
+        Orb = Window:AddTab({ Title = "Orbs", Icon = "rbxassetid://14872327926"}),
+        Fighters = Window:AddTab({ Title = "Quirk/Talent", Icon = "rbxassetid://14967735296"}),
+        Fuse = Window:AddTab({ Title = "Fuse", Icon = "rbxassetid://14967333477"}),
+        Deconstruct = Window:AddTab({ Title = "Essence", Icon = "rbxassetid://14967331293"}),
+        Others = Window:AddTab({ Title = "Others", Icon = "rbxassetid://14967729419" }),
+        Webhook = Window:AddTab({ Title = "Webhook", Icon = "rbxassetid://14967729419" }),
+       -- Ui = Window:AddTab({ Title = "Ui", Icon = "rbxassetid://14967352151" }),
+        Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
+    }
+
+    ----------------[            UI WINDOW/TABS            ]----------------
+    
+    ----------------[            SECTIONS            ]----------------
+
+    local FarmSection = Tabs.Main:AddSection("Farm")
+
+    local RaidSection = Tabs.Raids:AddSection("")
+
+    local FuseSection = Tabs.Fuse:AddSection("")
+
+    local DeconstructSection = Tabs.Deconstruct:AddSection("")
+
+    local WebhookSection = Tabs.Webhook:AddSection("")
+
+    ----------------[            SECTIONS            ]----------------
+
+
+    
+
+
+
+
+
+
+
+
+    
+    local Options = Fluent.Options
+    do
+        Fluent:Notify({Title = "Magenta",Content = "Welcome "..LocalPlayer.Name.." to Magenta Hub",Duration = 7})
+
+        local AutoCollect = Tabs.FarmSettings:AddToggle("CollectDrops", {Title = "Auto Collect Drops", Default = false})
+        Options.CollectDrops:OnChanged(function(Value)
+            if Options.CollectDrops.Value == true then
+                while Options.CollectDrops.Value == true do wait(0.1)
+                    local success, result = pcall(function()
+                        local PlayerRoot = game.Players.LocalPlayer.Character.HumanoidRootPart
+                        for i,v in pairs(game:GetService("Workspace").Effects:GetChildren()) do
+                            if string.find(v.Name, "Drop") and v.Name ~= "WaterDrop" then
+                            v.CFrame = PlayerRoot.CFrame
+                            end
+                        end
+                    end)
+                end
+            end
+        end)
+
+        local AutoClick = Tabs.FarmSettings:AddToggle("AutoClick", {Title = "Auto Click", Default = false})
+        Options.AutoClick:OnChanged(function(Value)
+            if Options.AutoClick.Value == true then
+                while Options.AutoClick.Value == true do wait(0.1)
+                    local success, result = pcall(function()
+                        AutoClickHandler:AttemptClick()
+                    end)
+                end
+            end
+        end)
+        local AutoAbility = Tabs.FarmSettings:AddToggle("AutoAbility", {Title = "Auto Ability", Default = false})
+        Options.AutoAbility:OnChanged(function(Value)
+            if Options.AutoAbility.Value == true then
+                while Options.AutoAbility.Value == true do wait(0.1)
+                    local success, result = pcall(function()
+                        firesignal(AbilityButton.Activated)
+                    end)
+                end
+            end
+        end)
+        ----------------{            [ FARM TAB ]            }-------------
+
+        ----------------{FARM SECTION}-------------
+
+        FarmSection:AddParagraph({
+            Title = "                              SETTINGS                       "
+        })
+        local FarmInfo = FarmSection:AddParagraph({
+            Title = "Information",
+            Content = "Select World First so mob dropdown can refresh"
+        })
+
+        -------+ MOB DROPDOWN +-------
+
+        local MobDropdown = FarmSection:AddDropdown("MobDropdown", {
+            Title = "Select Mob",
+            Description = "You can select multiple mobs.",
+            Values = {},
+            Multi = true,
+            Default = {},
+            Callback = function(Value)
+                MobsTable = {}
+                for i,_ in pairs(Value) do
+                    if not table.find(MobsTable, i) then
+                        table.insert(MobsTable, i)
+                    end
+                end
+            end
+        })
+
+        -------+ FARM WORLD DROPDOWN +-------
+
+        local SelectWorld = FarmSection:AddDropdown("WorldDropdown", {
+            Title = "Select World",
+            Values = WorldsTable,
+            Multi = false,
+            Default = "",
+            Callback = function(Value)
+                SelectedLocation = Value
+            end
+        })
+    
+        SelectWorld:OnChanged(function(Value)
+            local success, result = pcall(function()
+                EnemyTable = {}
+                Options.MobDropdown:SetValues(EnemyTable)
+                Options.MobDropdown.Value = {}
+                if SelectedLocation == "Green Planet" then
+                    EnemyTable = DBZNpc
+                    SelectedWorld = "DBZ"
+                elseif SelectedLocation == "Demon Forest" then
+                    EnemyTable = DemonNpc
+                    SelectedWorld = "DemonSlayer"
+                elseif SelectedLocation == "Bizarre Bazaar"  then
+                    EnemyTable = JojoNpc
+                    SelectedWorld = "Jojo"
+                elseif SelectedLocation == "Hero Academy" then
+                    EnemyTable = MHANpc
+                    SelectedWorld = "MHA"
+                elseif SelectedLocation == "Ninja Village" then
+                    EnemyTable = NarutoNpc
+                    SelectedWorld = "Naruto"
+                elseif SelectedLocation == "Pirate Town" then
+                    EnemyTable = OPNpc
+                    SelectedWorld = "OnePiece"
+                elseif SelectedLocation == "Cursed City" then
+                    EnemyTable = JJKNpc
+                    SelectedWorld = "JJK"
+                elseif SelectedLocation == "Spirit Town" then
+                    EnemyTable = BleachNpc
+                    SelectedWorld = "Bleach"
+                elseif SelectedLocation == "Land of Ants" then
+                    EnemyTable = HXHNpc
+                    SelectedWorld = "HxH"
+                end
+                Options.MobDropdown:SetValues(EnemyTable)
+                Options.MobDropdown.Value = {}
+            end)
+        end)
+
+        FarmSection:AddParagraph({
+            Title = "                              TOGGLE                       "
+        })
+        -------+ FARM TOGGLE +-------
+
+        local MobFarm = FarmSection:AddToggle("AutoFarm", {Title = "Activate Autofarm", Default = false})
+        local MobFarmTP = FarmSection:AddToggle("AutoTp", {Title = "Auto Tp To Enemy", Default = false})
+        Options.AutoFarm:OnChanged(function(Value)
+            while Options.AutoFarm.Value == true do wait()
+                local success, result = pcall(function()
+                    for _,Mob in pairs(workspace.Worlds[SelectedWorld].Enemies:GetChildren()) do
+                        local Pets = LocalPlayer.Pets:GetChildren()
+                        local Distance = (Mob.WorldPivot.Position - hrp.CFrame.Position).Magnitude
+                        local Health = Mob:GetAttribute("LocalHealth")
+                        local MobNameTag = Mob.HumanoidRootPart.EnemyNametag.NameFrame.DisplayName.Text
+                        if Health > 0 and Distance < 140 and Options.AutoFarm.Value and table.find(MobsTable, MobNameTag) and not Options.AutoTp.Value then
+                            repeat wait()
+                                for _,Pet in pairs(Pets) do
+                                    local Distance = (Pet.Value.WorldPivot.Position - Mob.HumanoidRootPart.Position).Magnitude
+                                    if Distance > 15 then
+                                        Pet.Value:PivotTo(CFrame.new(Mob.HumanoidRootPart.Position))
+                                    end
+                                    local HP = formatNumber(math.floor(Mob:GetAttribute("Health")))
+                                    local MaxHP = formatNumber(math.floor(Mob:GetAttribute("MaxHealth")))
+                                    FarmInfo:SetDesc("Enemy HP: "..HP.."/"..MaxHP.."\nEnemy name: "..MobNameTag)
+                                    game:GetService("ReplicatedStorage").Bindable.Pets.SetPetTarget:Fire(Pet.Value, Mob)
+                                end
+                            until Mob:GetAttribute("LocalHealth") <= 0 or Distance > 140 or not Options.AutoTp.Value
+                        elseif Options.AutoTp.Value and Health > 0 and Options.AutoFarm.Value and table.find(MobsTable, MobNameTag) then
+                            hrp.CFrame = Mob.HumanoidRootPart.CFrame
+                            repeat wait()
+                                for _,Pet in pairs(Pets) do
+                                    local Distance = (Pet.Value.WorldPivot.Position - Mob.HumanoidRootPart.Position).Magnitude
+                                    if Distance > 15 then
+                                        Pet.Value:PivotTo(CFrame.new(Mob.HumanoidRootPart.Position))
+                                    end
+                                    local HP = formatNumber(math.floor(Mob:GetAttribute("Health")))
+                                    local MaxHP = formatNumber(math.floor(Mob:GetAttribute("MaxHealth")))
+                                    FarmInfo:SetDesc("Enemy HP: "..HP.."/"..MaxHP.."\nEnemy name: "..MobNameTag)
+                                    game:GetService("ReplicatedStorage").Bindable.Pets.SetPetTarget:Fire(Pet.Value, Mob)
+                                end
+                            until Mob:GetAttribute("LocalHealth") <= 0 or not Options.AutoFarm.Value or not Options.AutoTp.Value
+                        else
+                            FarmInfo:SetDesc("Switching Or\nWaiting For Enemy")
+                        end
+                    end
+                end)
+            end
+        end)
+
+        -------+ COLLECT TOGGLE +-------
+
+
+        FarmSection:AddParagraph({
+            Title = "                              KILL AURA                       ",
+            Content = "       Disable Auto Farm if you want to use Kill Aura                       "
+        })
+        ----------------{FARM KILLAURA SECTION}-------------
+
+
+        -------+ KILL AURA TOGGLE +-------
+
+        local KillAura = FarmSection:AddToggle("KillAura", {Title ="Enable Kill Aura", Default = false})
+        Options.KillAura:OnChanged(function(Value)
+            while Options.KillAura.Value do wait()
+                pcall(function()
+                    local CurrentWorld = LocalPlayer.World.Value
+                    for _,Mob in pairs(workspace.Worlds[CurrentWorld].Enemies:GetChildren()) do
+                        local Pets = LocalPlayer.Pets:GetChildren()
+                        local Distance = (Mob.WorldPivot.Position - hrp.CFrame.Position).Magnitude
+                        local Health = Mob:GetAttribute("LocalHealth")
+                        local MobNameTag = Mob.HumanoidRootPart.EnemyNametag.NameFrame.DisplayName.Text
+                        if Health > 0 and Distance < 150 and Options.KillAura.Value then
+                            repeat wait()
+                                for _,Pet in pairs(Pets) do
+                                    local Distance = (Pet.Value.WorldPivot.Position - Mob.HumanoidRootPart.Position).Magnitude
+                                    if Distance > 15 then
+                                        Pet.Value:PivotTo(CFrame.new(Mob.HumanoidRootPart.Position))
+                                    end
+                                    local HP = formatNumber(math.floor(Mob:GetAttribute("Health")))
+                                    local MaxHP = formatNumber(math.floor(Mob:GetAttribute("MaxHealth")))
+                                    FarmInfo:SetDesc("Enemy HP: "..HP.."/"..MaxHP.."\nEnemy name: "..MobNameTag)
+                                    game:GetService("ReplicatedStorage").Bindable.Pets.SetPetTarget:Fire(Pet.Value, Mob)
+                                end
+                            until Mob:GetAttribute("LocalHealth") <= 0 or Distance > 150 or not Options.KillAura.Value or not Mob:IsDescendantOf(workspace.Worlds[CurrentWorld].Enemies)
+                        else
+                            FarmInfo:SetDesc("Switching Or \nWaiting For Enemy..")
+                        end
+                    end
+                end)
+            end
+        end)
+        
+        ----------------{            [ FARM TAB ]            }-------------
+
+
+
+
+
+
+
+
+
+
+
+        local PortalsInfo = Tabs.Halloween:AddParagraph({
+            Title = "Portals Info",
+            Content = ""
+        })
+        task.spawn(function()
+            while true do wait()
+                repeat wait()
+                local gameTimeInSeconds = workspace:GetServerTimeNow()
+                local NextEvent = game:GetService("ReplicatedStorage").GlobalEvents.NextEvent:GetAttribute("StartTime") --Next event start
+                local CurrentEvent = game:GetService("ReplicatedStorage").GlobalEvents.CurrentEvent:GetAttribute("EndTime") --Current event end
+                local TimeUntilNextEvent = NextEvent - gameTimeInSeconds
+                local TimeUntilCurrentEvent = CurrentEvent - gameTimeInSeconds
+                if TimeUntilCurrentEvent <= 0 then
+                    PortalsInfo:SetDesc("Current portal is done, wait for a new one\nTime until next portal: "..formatTime(TimeUntilNextEvent))
+                elseif TimeUntilCurrentEvent > 0 then
+                    PortalsInfo:SetDesc("Time until end of current portal: "..formatTime(TimeUntilCurrentEvent).."\nTime until next portal: "..formatTime(TimeUntilNextEvent))
+                end
+                until TimeUntilNextEvent < 0
+            end
+        end)
+        local EventAmount = Tabs.Halloween:AddDropdown("EventEggs", {
+            Title = "Select Amount\nTo Open",
+            Values = {1,3,10},
+            Multi = false,
+            Default = 1
+        })
+        local EventAutoOpen = Tabs.Halloween:AddToggle("EventAutoOpen", {Title = "Auto Open Event\nEggs", Default = false})
+        EventAutoOpen:OnChanged(function(Value)
+            while EventAutoOpen.Value do wait()
+                pcall(function()
+                    Remote.Store.PurchaseOrb:FireServer("HalloweenOrb", EventAmount.Value)
+                end)
+            end
+        end)
+        local PortalTeam = Tabs.Halloween:AddInput("PortalTeam", {
+            Title = "Select Team",
+            Default = "",
+            Placeholder = "number",
+            Numeric = true,
+            Finished = true
+        })
+        local PortalSwitch = Tabs.Halloween:AddToggle("SwitchTeamPortal",{Title = "Auto Switch To Selected Team",Default = false})
+        PortalSwitch:OnChanged(function(Value)
+            while PortalSwitch.Value do wait()
+                pcall(function()
+                    if getgenv().AutoPortals and PortalSwitch.Value and not getgenv().AutoRaiding then
+                        PlayerTeams = PlayerDataStore:GetData("Teams")
+                        for i,v in pairs(PlayerTeams[tonumber(PortalTeam.Value)]) do
+                            local Uargs = {[1] = tostring(i)}
+                            Remote.Data.SetEquipSlot:FireServer(unpack(Uargs))
+                            local Args = {[1] = tostring(i),[2] = v}
+                            Remote.Data.SetEquipSlot:FireServer(unpack(Args))
+                        end
+                    end
+                end)
+            end
+        end)
+        local AutoFarmPortals = Tabs.Halloween:AddToggle("AutoPortals", {Title = "Auto Farm Event\nPortals", Default = false})
+        AutoFarmPortals:OnChanged(function(Value)
+            getgenv().AutoPortals = Value
+            while AutoFarmPortals.Value do wait()
+                pcall(function()
+                    local gameTimeInSeconds = workspace:GetServerTimeNow()
+                    local CurrentEventEnd = game:GetService("ReplicatedStorage").GlobalEvents.CurrentEvent:GetAttribute("EndTime")
+                    local Difference = CurrentEventEnd - gameTimeInSeconds
+                    local CurrentWorld = LocalPlayer.World.Value
+                    if Difference > 0 then
+                        getgenv().AutoRaiding = false
+                        getgenv().AutoPortals = true
+                        if CurrentWorld ~= "ShadowWorld" then
+                            Remote.Player.Teleport:FireServer("ShadowWorld")
+                            wait(3)
+                        end
+                        if CurrentWorld == "ShadowWorld" then
+                            local CurrentWorld = LocalPlayer.World.Value
+                            for _,Mob in pairs(workspace.Worlds[CurrentWorld].Enemies:GetChildren()) do
+                                local Pets = LocalPlayer.Pets:GetChildren()
+                                local Health = Mob:GetAttribute("LocalHealth")
+                                local MobNameTag = Mob.HumanoidRootPart.EnemyNametag.NameFrame.DisplayName.Text
+                                if Health > 0 and AutoFarmPortals.Value and CurrentWorld == "ShadowWorld" then
+                                    hrp.CFrame = CFrame.new(Mob.WorldPivot.Position)
+                                    repeat wait()
+                                        for _,Pet in pairs(Pets) do
+                                            local Distance = (Pet.Value.WorldPivot.Position - Mob.HumanoidRootPart.Position).Magnitude
+                                            if Distance > 15 then
+                                                Pet.Value:PivotTo(CFrame.new(Mob.HumanoidRootPart.Position))
+                                            end
+                                            local HP = formatNumber(math.floor(Mob:GetAttribute("Health")))
+                                            local MaxHP = formatNumber(math.floor(Mob:GetAttribute("MaxHealth")))
+                                            PortalsInfo:SetDesc("Enemy HP: "..HP.."/"..MaxHP.."\nEnemy name: "..MobNameTag)
+                                            game:GetService("ReplicatedStorage").Bindable.Pets.SetPetTarget:Fire(Pet.Value, Mob)
+                                        end
+                                    until Mob:GetAttribute("LocalHealth") <= 0 or not AutoFarmPortals.Value or CurrentWorld ~= "ShadowWorld"
+                                else
+                                    PortalsInfo:SetDesc("Switching Or \nWaiting For Enemy..")
+                                end
+                            end
+                        end
+                    elseif Difference <= 0 then
+                        getgenv().AutoPortals = false
+                    end
+                end)
+            end
+        end)
+
+
+
+
+
+
+
+
+
+        
+        ----------------{            [ TOWER TAB ]            }-------------
+
+        local TowerLabel = Tabs.Tower:AddParagraph({
+            Title = "Information",
+            Content = "Start Tower First"
+        })
+    
+        -------+ JOIN TOWER TOGGLE +-------
+
+        Tabs.Tower:AddToggle("JoinTower", {Title = "Auto Start Tower", Default = false})
+        Options.JoinTower:OnChanged(function(Value)
+            if Options.JoinTower.Value == true then
+                local success, result = pcall(function()
+                    while Options.JoinTower.Value == true do wait()
+                        local TowerHud = LocalPlayer.PlayerGui.MainGui.HUD.TowerHUD
+                        if not TowerHud.Visible then
+                            Remote.Player.Teleport:FireServer("Hub")
+                            wait(3)
+                            Remote.Tower.StartTower:FireServer()
+                            wait(5)
+                        end
+                    end
+                end)
+            end
+        end)
+    
+        -------+ CLEAR TOWER TOGGLE +-------
+    
+        Tabs.Tower:AddToggle("ClearTower", {Title = "Autofarm Tower Mobs", Default = false})
+        Options.ClearTower:OnChanged(function(Value)
+            while Options.ClearTower.Value == true do wait()
+                local success, result = pcall(function()
+                    for _,TowerMob in pairs(workspace.Worlds.Tower.Enemies:GetChildren()) do
+                        local Pets = LocalPlayer.Pets:GetChildren()
+                        local Distance = (TowerMob.WorldPivot.Position - hrp.CFrame.Position).Magnitude
+                        local Health = TowerMob:GetAttribute("LocalHealth")
+                        local MobNameTag = TowerMob.HumanoidRootPart.EnemyNametag.NameFrame.DisplayName.Text
+                        if Health > 0 and Distance < 150 and Options.ClearTower.Value then
+                            repeat wait()
+                                for _,Pet in pairs(Pets) do
+                                    local Distance = (Pet.Value.WorldPivot.Position - TowerMob.HumanoidRootPart.Position).Magnitude
+                                    if Distance > 15 then
+                                        Pet.Value:PivotTo(CFrame.new(TowerMob.HumanoidRootPart.Position))
+                                    end
+                                    local HP = formatNumber(math.floor(TowerMob:GetAttribute("Health")))
+                                    local MaxHP = formatNumber(math.floor(TowerMob:GetAttribute("MaxHealth")))
+                                    TowerLabel:SetDesc("Enemy HP: "..HP.."/"..MaxHP.."\nEnemy name: "..MobNameTag)
+                                    game:GetService("ReplicatedStorage").Bindable.Pets.SetPetTarget:Fire(Pet.Value, TowerMob)
+                                end
+                            until TowerMob:GetAttribute("LocalHealth") <= 0 or Distance > 140 or not Options.ClearTower.Value
+                        else
+                            TowerLabel:SetDesc("Switching Enemy or\nwaiting for Enemy..")
+                        end
+                    end
+                end)
+            end
+        end)
+    
+        -------+ AUTO COLLECT CHEST TOGGLE +-------
+
+        Tabs.Tower:AddToggle("AutoCollectChest", {Title = "Auto Collect Chests", Default = false})
+        Options.AutoCollectChest:OnChanged(function(Value)
+            if Options.AutoCollectChest.Value == true then
+                while Options.AutoCollectChest.Value == true do wait()
+                    local success, result = pcall(function()
+                        for i,v in pairs(game.workspace.Worlds.Tower:GetDescendants()) do
+                            if v.Name == "ChestPrompt" then
+                                for i = 1, 5 do 
+                                v.Parent.CFrame = hrp.CFrame
+                                fireproximityprompt(v)
+                                end
+                            end
+                        end
+                    end)
+                end
+            end
+        end)
+
+        ----------------{            [ TOWER TAB ]            }-------------
+
+
+
+        ----------------{            [ RAID TAB ]            }-------------
+
+        ----------------{AUTO RAID SECTION}-------------
+        
+       
+
+        RaidSection:AddParagraph({
+            Title = CenterText("SETTINGS")
+        })
+        local RaidInfo = RaidSection:AddParagraph({
+            Title = "Information",
+            Content = "Start Raid First"
+        })
+        local RaidCoolDown = RaidSection:AddParagraph({
+            Title = "Raid Cooldown",
+            Content = "00:00"
+        })
+        task.spawn(function()
+            while true do wait()
+                local WhenCanDo = PlayerDataStore:GetData("LastRaidHosted") + 300
+                local currentWorld = game:GetService("Players").LocalPlayer.World.Value
+                gameTimeInSeconds = workspace:GetServerTimeNow()
+                WhenCanDo = PlayerDataStore:GetData("LastRaidHosted") + 300
+                if (WhenCanDo - gameTimeInSeconds) > 0 then
+                    for i = (WhenCanDo - gameTimeInSeconds), 1, -1 do
+                        RaidCoolDown:SetDesc(formatTime(i))
+                        wait(1)
+                        if (WhenCanDo - gameTimeInSeconds) <= 0 then
+                        break
+                        end
+                    end
+                end
+            end
+        end)
+        -------+ SELECT WORLD RAID DROPDOWN +-------
+        local SelectWorld = RaidSection:AddDropdown("RaidWorld", {
+            Title = "Select World",
+            Values = WorldsTable,
+            Multi = false,
+            Default = ""
+        })
+
+        Options.RaidWorld:OnChanged(function(Value)
+            local success, result = pcall(function()
+                local RaidWorldSelect = Options.RaidWorld.Value
+                if RaidWorldSelect == "Green Planet" then
+                    RaidWorld = "DBZ"
+                    SelectedTable = line1
+                elseif RaidWorldSelect == "Demon Forest" then
+                    RaidWorld = "DemonSlayer"
+                    SelectedTable = line6
+                elseif RaidWorldSelect == "Bizarre Bazaar"  then
+                    RaidWorld = "Jojo"
+                    SelectedTable = line5
+                elseif RaidWorldSelect == "Hero Academy" then
+                    RaidWorld = "MHA"
+                    SelectedTable = line3
+                elseif RaidWorldSelect == "Ninja Village" then
+                    RaidWorld = "Naruto"
+                    SelectedTable = line4
+                elseif RaidWorldSelect == "Pirate Town" then
+                    RaidWorld = "OnePiece"
+                    SelectedTable = line2
+                elseif RaidWorldSelect == "Cursed City" then
+                    RaidWorld = "JJK"
+                    SelectedTable = line7
+                elseif RaidWorldSelect == "Spirit Town" then
+                    RaidWorld = "Bleach"
+                    SelectedTable = line8
+                elseif RaidWorldSelect == "Land of Ants" then
+                    RaidWorld = "HxH"
+                    SelectedTable = line9
+                end
+            end)
+        end)
+    
+        -------+ SELECT DIFFICULTY RAID DROPDOWN +-------
+
+        local SelectDifficulty = RaidSection:AddDropdown("RaidDifficulty", {
+            Title = "Select Difficulty",
+            Values = {"Easy", "Medium", "Hard", "Impossible"},
+            Multi = false,
+            Default = "",
+        })
+        
+        
+        local PrivateRaid = RaidSection:AddToggle("PrivateRaid", {Title = "Private Raid", Default = false})
+
+        getgenv().currentRaid = nil 
+        getgenv().EndTime = nil
+        -------+ JOIN RAID TOGGLE +-------
+        local JoinRaid = RaidSection:AddToggle("AutoJoinRaid", {Title = "Auto Join Raid", Default = false})
+        Options.AutoJoinRaid:OnChanged(function(Value)
+            getgenv().AutoRaiding = false
+            getgenv().InRaid = false
+            local StartSearching = false
+            local success, result = pcall(function()
+                if Options.AutoJoinRaid.Value then
+                    while Options.AutoJoinRaid.Value do task.wait(0.1)
+                        local gameTimeInSeconds = workspace:GetServerTimeNow()
+                        local WhenCanDo = PlayerDataStore:GetData("LastRaidHosted") + 300
+                        local currentWorld = game:GetService("Players").LocalPlayer.World.Value
+                        local RaidHud = game:GetService("Players").LocalPlayer.PlayerGui.MainGui.HUD.RaidHUD
+                        local RoomPath
+                        local Waiting = false
+                        local RaidRemote = game:GetService("ReplicatedStorage").Remote.Raid
+                        local Difficulty = Options.RaidDifficulty.Value
+                        if not RaidHud.Visible and not Waiting and (WhenCanDo - gameTimeInSeconds) <= 0 and not getgenv().AutoRaiding and not getgenv().AutoPortals then
+                            getgenv().AutoRaiding = true
+                            local RaidUI = game:GetService("Players").LocalPlayer.PlayerGui.MainGui.Windows.RaidLobby.Main
+                            RaidInfo:SetDesc("Starting Raid")
+                            if currentWorld ~= "Hub" then
+                            Remote.Player.Teleport:FireServer("Hub")
+                            end
+                            wait(3)
+                            local Private = RaidUI.Players.Private
+                            local StartRaidButton = RaidUI.Players.StartRaidButton
+                            local WorldSelect = RaidUI.Options.Worlds[RaidWorld].Button
+                            local DiffucultySelect = RaidUI.Options.Difficulty.DifficultyLevels[Options.RaidDifficulty.Value].Button
+                            local HRP = game.Players.LocalPlayer.Character.HumanoidRootPart
+                            repeat task.wait(1)
+                                for i,v in pairs(game:GetService("Workspace").Worlds.Hub.DungeonTemple["1"].RaidRooms:GetDescendants()) do
+                                    if v.Name == "Part1" and v.Parent.Name == "Door" then
+                                        if string.find(tostring(v.Color),"0.396078")   then
+                                        HRP.CFrame = v.Parent.Parent.CFrame
+                                        break
+                                        end
+                                    end
+                                end
+                            until RaidUI.Visible
+                            wait(0.5)
+                            gameTimeInSeconds = workspace:GetServerTimeNow()
+                            WhenCanDo = PlayerDataStore:GetData("LastRaidHosted") + 300
+                            if (WhenCanDo - gameTimeInSeconds) <= 0 and not getgenv().AutoPortals then
+                                StartSearching = false
+                                getgenv().AutoRaiding = true
+                                wait(0.5)
+                                repeat wait()
+                                    if Options.PrivateRaid.Value == true and Private.Mover.BackgroundColor3 ~= Color3.fromRGB(255, 183, 42) then
+                                        firesignal(Private.Activated)
+                                        wait(0.5)
+                                    elseif Options.PrivateRaid.Value == false and Private.Mover.BackgroundColor3 == Color3.fromRGB(255, 183, 42) then
+                                        firesignal(Private.Activated)
+                                        wait(0.5)   
+                                    end
+                                    firesignal(WorldSelect.Activated)
+                                    wait(0.5)
+                                    firesignal(DiffucultySelect.Activated)
+                                    wait(0.5)
+                                    firesignal(StartRaidButton.Activated)
+                                    wait(5)
+                                    if RaidWorld == "HxH" then
+                                    Remote.Player.Teleport:FireServer("Raids","Palace")
+                                    wait(3)
+                                    Remote.Player.Teleport:FireServer("Raids","Default")
+                                    end
+                                until LocalPlayer.World.Value == "Raids" or not RaidUI.Visible or not Options.AutoJoinRaid.Value
+                            end 
+                        elseif not RaidHud.Visible and not Waiting and (WhenCanDo - gameTimeInSeconds) > 0 and currentWorld ~= "Raids" then
+                            wait(1)
+                            getgenv().AutoRaiding = false
+                        elseif getgenv().AutoPortals then
+                            getgenv().AutoRaiding = false
+                        elseif RaidHud.Visible and not string.match(RaidHud.NameDisplay.RaidName.Text,Options.RaidWorld.Value) and not getgenv().AutoPortals then
+                            wait(5)
+                            if not string.match(RaidHud.NameDisplay.RaidName.Text,Options.RaidWorld.Value) then
+                                RaidInfo:SetDesc("Changing Raid World")
+                                Remote.Player.Teleport:FireServer("Hub")
+                            end
+                        elseif RaidHud.Visible and RaidHud.TimerDisplay.Timer.Text == "0:00" and not getgenv().AutoPortals then
+                            RaidInfo:SetDesc("Restarting Raid")
+                            Remote.Player.Teleport:FireServer("Hub")
+                        elseif RaidHud.Visible and RaidHud.TimerDisplay.Timer.Text and not getgenv().AutoPortals then
+                            getgenv().AutoRaiding = true
+                            local FirstTimer = RaidHud.TimerDisplay.Timer.Text
+                            wait(5)
+                            local SecondTimer = RaidHud.TimerDisplay.Timer.Text
+                            if FirstTimer == SecondTimer then
+                            RaidInfo:SetDesc("Restarting Raid")
+                            Remote.Player.Teleport:FireServer("Hub")
+                            firesignal(LocalPlayer.PlayerGui.RaidCompleteGui.RaidCompleteOverlay.HUBButton.Activated)
+                            end
+                        elseif RaidHud.Visible and not getgenv().AutoPortals then
+                            getgenv().AutoRaiding = true
+                            StartSearching = true      
+                            while StartSearching == true do task.wait(0.1)
+                                for _, v in pairs(game.workspace.Worlds.Raids:GetDescendants()) do
+                                    if v.Name == "CurrentBoss" then
+                                        if v.Value ~= nil then
+                                            if getgenv().currentRaid ~= v.Parent.Name then 
+                                                getgenv().currentRaid = v.Parent.Name
+                                            end
+                                        end
+                                    end
+                                end
+                                if getgenv().currentRaid ~= nil then
+                                    local success, result = pcall(function()
+                                        EndTime = workspace.Worlds.Raids[getgenv().currentRaid]:GetAttribute("EndTime")
+                                    end)
+                                    if EndTime == 0 or (EndTime == 0  and RaidHud.TimerDisplay.Timer.Text == "0:00") then 
+                                        wait(5) 
+                                        RaidInfo:SetDesc("Restarting Raid")
+                                        Remote.Player.Teleport:FireServer("Hub")
+                                        firesignal(LocalPlayer.PlayerGui.RaidCompleteGui.RaidCompleteOverlay.HUBButton.Activated)
+                                    elseif EndTime == nil then 
+                                    end
+                                end
+                            end
+                        end
+                    end
+                elseif Options.AutoJoinRaid.Value == false then
+                    StartSearching = false
+                end
+            end)
+        end)
+
+
+        -------+ AUTO KILL RAID NPC TOGGLE +-------
+        local RaidTeam = RaidSection:AddInput("RaidTeam", {
+            Title = "Select Team",
+            Default = "",
+            Placeholder = "number",
+            Numeric = true,
+            Finished = true,
+            Callback = function(Value)
+                RaidTeam = tonumber(Value)
+            end
+        })
+        RaidSection:AddToggle("SwitchRaidTeam",{
+            Title = "Auto Switch To Selected Team",
+            Default = false,
+            Callback = function()
+                while Options.SwitchRaidTeam.Value == true do wait()
+                    local success, result = pcall(function()
+                        if getgenv().AutoRaiding and not getgenv().AutoPortals and Options.SwitchRaidTeam.Value == true then
+                            PlayerTeams = PlayerDataStore:GetData("Teams")
+                            for i,v in pairs(PlayerTeams[tonumber(Options.RaidTeam.Value)]) do
+                                local Uargs = {[1] = tostring(i)}
+                                Remote.Data.SetEquipSlot:FireServer(unpack(Uargs))
+                                local Args = {[1] = tostring(i),[2] = v}
+                                Remote.Data.SetEquipSlot:FireServer(unpack(Args))
+                            end
+                        end
+                    end)
+                end
+            end
+        })
+        
+        RaidSection:AddParagraph({
+            Title = CenterText("TOGGLE"),
+            Content = "             Auto Kill Raid NPC         "
+        })
+        
+        local AutoRaidMob = RaidSection:AddToggle("RaidMob", {Title = "Auto Kill NPC", Default = false})
+        Options.RaidMob:OnChanged(function(Value)
+            while Options.RaidMob.Value do wait()
+                local Attacking = false
+                local success, errorOrValue = pcall(function()
+                    local closestEnemy = nil
+                    local closestDistance = math.huge
+                    for _,RaidMob in pairs(workspace.Worlds.Raids.Enemies:GetChildren()) do
+                        if RaidMob:GetAttribute("LocalHealth") >= 0 and not Attacking then
+                            local Attribute = RaidMob:GetAttribute("Invulnerable")
+                            local Distance = (hrp.CFrame.Position - RaidMob.WorldPivot.Position).Magnitude
+                            if (Attribute == false or not Attribute) and table.find(SelectedTable, RaidMob.Name) and RaidMob:GetAttribute("LocalHealth") > 0 and Distance <= 2000 then
+                                if Distance < closestDistance then
+                                    closestDistance = Distance
+                                    closestEnemy = RaidMob
+                                end
+                            elseif (Attribute == false or not Attribute) and table.find(SelectedTable, RaidMob.Name) and RaidMob:GetAttribute("LocalHealth") > 0 and Distance < closestDistance and RaidWorld == "HxH" and Distance <= 4000 then
+                                if Distance < closestDistance then
+                                    closestDistance = Distance
+                                    closestEnemy = RaidMob
+                                end
+                            end
+                        end
+                    end
+                    FarmInfo:SetDesc("Switching Or\nWaiting For Enemy")
+                    if closestEnemy and not Attribute and not table.find(RaidBoss, closestEnemy.Name) and not Attacking then
+                        Attacking = true
+                        if (hrp.CFrame.Position - closestEnemy.WorldPivot.Position).Magnitude >= 20 then
+                        hrp.CFrame = closestEnemy.HumanoidRootPart.CFrame
+                        end
+                    elseif closestEnemy and not Attribute and table.find(RaidBoss, closestEnemy.Name) and not Attacking then
+                        Attacking = true
+                        if (hrp.CFrame.Position - closestEnemy.WorldPivot.Position).Magnitude >= 20 then
+                        hrp.CFrame = closestEnemy.HumanoidRootPart.CFrame
+                        CreateTpPart(closestEnemy)
+                        end
+                    end
+                    repeat wait()
+                        Attacking = true
+                        local Pets = LocalPlayer.Pets:GetChildren()
+                        for _,Pet in pairs(Pets) do
+                            if (closestEnemy:GetAttribute("Regenerating") and closestEnemy:GetAttribute("Regenerating") == false) or not closestEnemy:GetAttribute("Regenerating") then
+                            local Distance = (Pet.Value.WorldPivot.Position - closestEnemy.HumanoidRootPart.Position).Magnitude
+                            if Distance > 15 then
+                                Pet.Value:PivotTo(CFrame.new(closestEnemy.HumanoidRootPart.Position))
+                            end
+                            local HP = formatNumber(math.floor(closestEnemy:GetAttribute("Health")))
+                            local MaxHP = formatNumber(math.floor(closestEnemy:GetAttribute("MaxHealth")))
+                            local MobNameTag = closestEnemy.HumanoidRootPart.EnemyNametag.NameFrame.DisplayName.Text
+                            RaidInfo:SetDesc("Enemy HP: "..HP.."/"..MaxHP.."\nEnemy name: "..MobNameTag)
+                            game:GetService("ReplicatedStorage").Bindable.Pets.SetPetTarget:Fire(Pet.Value, closestEnemy)
+                            elseif closestEnemy:GetAttribute("Regeneration") and closestEnemy:GetAttribute("Regenerating") == true then
+                                for _,Pet in pairs(Pets) do
+                                    game:GetService("ReplicatedStorage").Bindable.Pets.SetPetTarget:Fire(Pet.Value)
+                                end
+                            end
+                        end
+                        if closestEnemy:GetAttribute("LocalHealth") <= 0 or RaidMob:GetAttribute("Invulnerable") and RaidMob:GetAttribute("Invulnerable") == true then
+                            Attacking = false
+                        end 
+                    until not Attacking or (Attribute and Attribute == true) or (closestEnemy:GetAttribute("Regenerating") and closestEnemy:GetAttribute("Regenerating") == true) or closestEnemy:GetAttribute("LocalHealth") <= 0 or closestDistance > 2000 or not Options.RaidMob.Value
+                    Attacking = false
+                    if workspace:FindFirstChild("Part") then
+                        for i,v in pairs(workspace:GetChildren()) do
+                            if v.Name == "Part" then
+                                v:Destroy()
+                            end
+                        end
+                    end
+                    RaidInfo:SetDesc("Switching Or\nWaiting For Enemy")
+                end)
+            end
+        end)
+
+        -------+ AUTO CLAIM RAID CHEST TOGGLE +-------
+        local DailyChest = RaidSection:AddToggle("DailyChest", {Title = "Collect Daily Chest", Default = false})
+        local RaidChest = RaidSection:AddToggle("RaidChest", {Title = "Auto Collect Raid Chests", Default = false})
+        Options.RaidChest:OnChanged(function(Value)
+            if Options.RaidChest.Value == true then
+                while Options.RaidChest.Value == true do task.wait(0.1)
+                    local success, result = pcall(function()
+                        for i,v in pairs(game:GetService("Workspace").Worlds.Raids:GetDescendants()) do
+                            if v.Name == "ChestPrompt" and v.Parent.Name == "HumanoidRootPart" then
+                                local Chest = v.Parent.CFrame.Position
+                                local Player = hrp.CFrame.Position
+                                local Distance = Player - Chest
+                                local magnitude = Distance.Magnitude
+                                if v.Parent.Parent.Name == "RaidChest" then
+                                for i = 1, 5 do HeartBeat:wait()
+                                    v.Parent.CFrame = hrp.CFrame
+                                    fireproximityprompt(v)
+                                    v.Parent.CFrame = hrp.CFrame
+                                end
+                                v.Parent.Parent:Destroy()
+                                elseif magnitude < 2000 and v.Parent.Parent.Name == "RaidChest2" and Options.DailyChest.Value then
+                                    for i = 1, 5 do HeartBeat:wait()
+                                        v.Parent.CFrame = hrp.CFrame
+                                        fireproximityprompt(v)
+                                        v.Parent.CFrame = hrp.CFrame
+                                    end
+                                    v.Parent.Parent:Destroy()
+                                end
+                            end
+                        end
+                    end)
+                end
+            end
+        end)
+
+          -------+ AUTO DELETE SKINS DROPDOWN +-------
+          RaidSection:AddParagraph({
+            Title = CenterText("SCRAP")
+        })
+
+          local SkinsDropdown = RaidSection:AddDropdown("SkinsDropdown", {
+            Title = "Select Skins Rarity\nTo Scrap",
+            Description = "",
+            Values = {"Common", "Rare", "Epic", "Legendary", "Mythical"},
+            Multi = true,
+            Default = {},
+            Callback = function(Value)
+                SkinsSelect = {}
+                for i,v in pairs(Value) do
+                    if not table.find(SkinsSelect, i) then
+                        table.insert(SkinsSelect, i)
+                    end
+                end
+            end
+            })
+    
+        -------+ AUTO DELETE SKINS TOGGLE +-------
+
+        local DeleteSkins = RaidSection:AddToggle("DeleteSkins", {Title = "Auto Scrap Skins", Default = false})
+        Options.DeleteSkins:OnChanged(function(Value)
+            if Options.DeleteSkins.Value == true then
+                local success, result = pcall(function()
+                    while Options.DeleteSkins.Value == true do task.wait(0.1)
+                        PlayerItems = PlayerDataStore:GetData("Items")
+                        for Data,Value in pairs(PlayerItems) do
+                            if Data ~= nil and Value ~= nil then
+                                if table.find(itemNames, Data) then
+                                    local SkinName = Data
+                                    for _,ItemData in pairs(Value) do
+                                        if type(ItemData) == "table" then
+                                            if string.find(ItemData.Passive,"1") and table.find(SkinsSelect, "Common") then
+                                                DeleteSkin(SkinName)
+                                            elseif string.find(ItemData.Passive,"2") and table.find(SkinsSelect, "Rare") then
+                                                DeleteSkin(SkinName)
+                                            elseif string.find(ItemData.Passive,"3") and table.find(SkinsSelect, "Epic") then
+                                                DeleteSkin(SkinName)
+                                            elseif string.find(ItemData.Passive,"4") and table.find(SkinsSelect, "Legendary") then
+                                                DeleteSkin(SkinName)
+                                            elseif string.find(ItemData.Passive,"5") and table.find(SkinsSelect, "Mythical") then
+                                                DeleteSkin(SkinName)
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end)
+            end
+        end)
+
+        -------+ AUTO LEAVE MINUTES INPUT +-------
+        RaidSection:AddParagraph({
+            Title = "                       OTHERS SETTINGS                       "
+        })
+        local RaidMinutes = RaidSection:AddInput("RaidMinutes", {
+            Title = "Minutes Input",
+            Default = "",
+            Placeholder = "1-15",
+            Numeric = true,
+            Finished = true,
+            Callback = function(Value)
+                RaidLeaveMinutes = tonumber(Value)
+            end
+        })
+
+        -------+ AUTO LEAVE SECONDS INPUT +-------
+
+        local RaidSeconds = RaidSection:AddInput("RaidSeconds", {
+            Title = "Seconds Input",
+            Default = "",
+            Placeholder = "1-60",
+            Numeric = true,
+            Finished = true,
+            Callback = function(Value)
+                RaidLeaveSeconds = tonumber(Value)
+            end
+        })
+
+        -------+ AUTO LEAVE RAID TOGGLE +-------
+
+        local RaidLeave = RaidSection:AddToggle("RaidLeave", {Title = "Auto Leave At Time", Default = false })
+        RaidLeave:OnChanged(function()
+            if Options.RaidLeave.Value == true then
+                while Options.RaidLeave.Value == true do wait()
+                    local success, result = pcall(function()
+                        local RaidHud = game:GetService("Players").LocalPlayer.PlayerGui.MainGui.HUD.RaidHUD
+                        if RaidHud.Visible then
+                            local inputString = RaidHud.TimerDisplay.Timer.Text
+                            local number1, number2 = string.match(inputString, "(%d+):(%d+)")
+                            local Seconds = tonumber(number2)
+                            if number2 == "09" or number2 == "08" or number2 == "07" or number2 == "06" or number2 == "05" or number2 == "04" or number2 == "03" or number2 == "02" or number2 == "01" or number2 == "00" then
+                                Seconds = tonumber(string.match(number2, "0*(%d+)"))
+                            end
+                            local Minutes = tonumber(number1)
+                            if Seconds <= RaidLeaveSeconds and Minutes <= RaidLeaveMinutes then
+                                Remote.Player.Teleport:FireServer("Hub")
+                            end
+                        end
+                    end)
+                end
+            end
+        end)
+
+      
+        ----------------{            [ RAID TAB ]            }-------------
+    
+
+
+        ----------------{            [ ORB TAB ]            }-------------
+
+    
+        -------+ SELECT ORB DROPDOWN +-------
+        local EggInfo = Tabs.Orb:AddParagraph({
+            Title = "Information",
+            Content = "Select how many orbs you can open without script"
+        })
+    
+        Tabs.Orb:AddDropdown("EggDrop", {
+            Title = "Select Egg",
+            Values = {"Dragon Orb", "Pirate Orb", "Hero Orb", "Ninja Orb", "Strange Orb", "Demon Orb", "Cursed Orb", "Soul Reaper Orb","Hunter Orb","Black Hole Orb"},
+            Multi = false,
+            Default = "",
+            Callback = function(value)
+                selectedOrb = ""
+                if value == "Dragon Orb" then
+                    selectedOrb = "DBZOrb"
+                elseif value == "Pirate Orb" then
+                    selectedOrb = "OnePieceOrb"
+                elseif value == "Hero Orb" then
+                    selectedOrb = "MHAOrb"
+                elseif value == "Ninja Orb" then
+                    selectedOrb = "NarutoOrb"
+                elseif value == "Strange Orb" then
+                    selectedOrb = "BizarreOrb"
+                elseif value == "Demon Orb" then
+                    selectedOrb = "DemonOrb"
+                elseif value == "Cursed Orb" then
+                    selectedOrb = "JJKOrb"
+                elseif value == "Soul Reaper Orb" then
+                    selectedOrb = "BleachOrb"
+                elseif value == "Hunter Orb" then
+                    selectedOrb = "HxHOrb"
+                elseif value == "Black Hole Orb" then
+                    selectedOrb = "BlackHoleOrb"
+                end
+            end
+        })
+        -------+ SELECT AMOUNT TO OPEN DROPDOWN +-------
+        
+        Tabs.Orb:AddDropdown("EggAmount", {
+            Title = "Select Amount\nTo Open",
+            Values = {"1","2","3","4","5","6","7","8"},
+            Multi = false,
+            Default = "1",
+            Callback = function(value)
+                selectedAmount = value
+            end
+        })
+        Tabs.Orb:AddInput("OrbTeam", {
+            Title = "Select Team",
+            Default = "",
+            Placeholder = "number",
+            Numeric = true,
+            Finished = true,
+            Callback = function(Value)
+                OrbTeam = tostring(Value)
+            end
+        })
+        Tabs.Orb:AddToggle("SwitchOrbTeam",{
+            Title = "Auto Switch To Selected Team",
+            Default = false,
+            Callback = function(bool)
+                while Options.SwitchOrbTeam.Value == true do wait()
+                    local success, result = pcall(function()
+                        if not getgenv().AutoRaiding and not getgenv().AutoPortals and Options.SwitchOrbTeam.Value == true then
+                            PlayerTeams = PlayerDataStore:GetData("Teams")
+                            for i,v in pairs(PlayerTeams[tonumber(OrbTeam)]) do
+                                local Uargs = {[1] = tostring(i)}
+                                Remote.Data.SetEquipSlot:FireServer(unpack(Uargs))
+                                local Args = {[1] = tostring(i),[2] = v}
+                                Remote.Data.SetEquipSlot:FireServer(unpack(Args))
+                            end
+                        end
+                    end)
+                end
+            end
+        })
+
+        -------+ AUTO OPEN ORB TOGGLE +-------
+    
+        Tabs.Orb:AddToggle("HatchOrb",{
+            Title = "Auto Hatch",
+            Default = false,
+            Callback = function(bool)
+                getgenv().AutoOpen = bool
+                if bool and selectedOrb and selectedAmount then
+                    while Options.HatchOrb.Value do task.wait(0.1)
+                        local success, result = pcall(function()
+                            if not getgenv().AutoRaiding and not getgenv().AutoPortals then
+                                local currentWorld = game:GetService("Players").LocalPlayer.World.Value
+                                if selectedOrb == "DBZOrb" then 
+                                    world = "DBZ"
+                                elseif selectedOrb == "OnePieceOrb" then 
+                                    world = "OnePiece"
+                                elseif selectedOrb == "MHAOrb" then 
+                                    world = "MHA"
+                                elseif selectedOrb == "NarutoOrb" then 
+                                    world = "Naruto"
+                                elseif selectedOrb == "BizarreOrb" then 
+                                    world = "Jojo"
+                                elseif selectedOrb == "DemonOrb" then 
+                                    world = "DemonSlayer"
+                                elseif selectedOrb == "JJKOrb" then 
+                                    world = "JJK"
+                                elseif selectedOrb == "BleachOrb" then 
+                                    world = "Bleach"
+                                elseif selectedOrb == "HxHOrb" then
+                                    world = "HxH"
+                                end
+                                if currentWorld ~= "Raids" and currentWorld ~= "Hub" and currentWorld ~= world and not getgenv().AutoRaiding and not getgenv().AutoPortals then
+                                    game:GetService("ReplicatedStorage").Remote.Player.Teleport:FireServer(world)
+                                elseif currentWorld == "Raids" or currentWorld == "Hub" and currentWorld ~= world and not getgenv().AutoRaiding and not getgenv().AutoPortals then
+                                    game:GetService("ReplicatedStorage").Remote.Player.Teleport:FireServer(world)
+                                end
+                                local worldPath = workspace.Worlds[world][selectedOrb]
+                                if (hrp.CFrame.Position - worldPath.WorldPivot.Position).Magnitude >= 15 then
+                                hrp.CFrame = CFrame.new(worldPath.WorldPivot.Position) + Vector3.new(0, 10, 0)
+                                end
+                                task.wait(1)
+                                game:GetService("ReplicatedStorage").Remote.Orbs.OpenOrbs:FireServer(worldPath,tonumber(selectedAmount))
+                                local OrbOpen = 0
+                                PlayerOrbs = PlayerDataStore:GetData("OrbsBreakdown")
+                                if Options.EggDrop.Value == "Dragon Orb" then
+                                    OrbOpen = PlayerOrbs["DBZOrb"]
+                                elseif Options.EggDrop.Value == "Pirate Orb" then
+                                    OrbOpen = PlayerOrbs["OnePieceOrb"]
+                                elseif Options.EggDrop.Value == "Hero Orb" then
+                                    OrbOpen = PlayerOrbs["MHAOrb"]
+                                elseif Options.EggDrop.Value == "Ninja Orb" then
+                                    OrbOpen = PlayerOrbs["NarutoOrb"]
+                                elseif Options.EggDrop.Value == "Strange Orb" then
+                                    OrbOpen = PlayerOrbs["BizarreOrb"]
+                                elseif Options.EggDrop.Value == "Demon Orb" then
+                                    OrbOpen = PlayerOrbs["DemonOrb"]
+                                elseif Options.EggDrop.Value == "Cursed Orb" then
+                                    OrbOpen = PlayerOrbs["JJKOrb"]
+                                elseif Options.EggDrop.Value == "Soul Reaper Orb" then
+                                    OrbOpen = PlayerOrbs["BleachOrb"]
+                                elseif Options.EggDrop.Value == "Hunter Orb" then
+                                    OrbOpen = PlayerOrbs["HxHOrb"]
+                                elseif Options.EggDrop.Value == "Black Hole Orb" then
+                                    OrbOpen = PlayerOrbs["BlackHoleOrb"]
+                                else
+                                    OrbOpen = 0
+                                end
+                                local MaxOpen = 1
+                                for i = 1, 5 do
+                                    PlayerUpgrades = PlayerDataStore:GetData("Upgrades")
+                                    if PlayerUpgrades["Open"..i] then
+                                        MaxOpen = MaxOpen + 1
+                                    end
+                                end
+                                local StoreUI = LocalPlayer.PlayerGui.MainGui.Windows.Store.Main.Gamepasses
+                                if StoreUI["232927842"].Button.OwnedOverlay.Visible then
+                                    MaxOpen = MaxOpen + 2
+                                end
+                                local timePerOrb = 3.25
+                                if StoreUI["232929208"].Button.OwnedOverlay.Visible then
+                                    timePerOrb = 2
+                                end
+                                local PlayTime = tonumber(PlayerDataStore:GetData("PlayTime"))
+                                local LegitOrbs = math.floor(PlayTime / timePerOrb * MaxOpen)
+                                local formatedOrbs = formatNumberWithCommas(LegitOrbs)
+                                local TotalOpened = formatNumberWithCommas(PlayerDataStore:GetData("TotalOrbsOpened"))
+                                local SelectedOpened = formatNumberWithCommas(OrbOpen)
+                                EggInfo:SetDesc("Opening: "..Options.EggDrop.Value.. "\nAmount: ".. selectedAmount.."\nOpened "..Options.EggDrop.Value.."s: "..SelectedOpened.."\nTotal Opened: "..TotalOpened.."\nMax Legit Possible: "..formatedOrbs)
+                            end
+                        end)
+                    end
+                end
+            end
+        })
+
+        ----------------{            [ ORB TAB ]            }-------------
+
+
+
+        ----------------{            [ FIGTHERS TAB ]            }-------------
+        
+        ----------------{FIGHTERS SELECT SECTION}-------------
+
+      
+        -------+ PET SELECT DROPDOWN +-------
+        Tabs.Fighters:AddParagraph({
+            Title = CenterText("INFORMATION")
+        })
+
+        local TalentInfoPet = Tabs.Fighters:AddParagraph({
+            Title = "Talent Information\n(Selected Pet)",
+            Content = ""
+        })
+     
+        local QuirksInfoPet = Tabs.Fighters:AddParagraph({
+            Title = "Quirks Information\n(Selected Pet)",
+            Content = ""
+        })
+
+        Tabs.Fighters:AddParagraph({
+            Title = CenterText("PET")
+        })
+
+        local PetQuirk = Tabs.Fighters:AddDropdown("PetQuirk", {
+            Title = "Select Pet\n(QUIRK/TALENT)",
+            Values = {},
+            Multi = false,
+            Default = "",
+            Callback = function(value)
+                local success, result = pcall(function()
+                SelectedIDQ = string.match(value, "%s|%s(%S+)$")
+                end)
+            end
+        })
+
+        Options.PetQuirk:OnChanged(function(Value)
+            local success, result = pcall(function()
+                PlayerPets = PlayerDataStore:GetData("Pets")
+                if PlayerPets[SelectedIDQ] then
+                    local PathFor = PlayerPets[SelectedIDQ]
+                    local PetName = PathFor.PetId
+                    local Passive = PathFor.Passives
+                    local Slot2 = "Nil"
+                    local Slot1 = "Nil"
+                    local Rank2 = "Nil"
+                    local Rank1 = "Nil"
+                    if PathFor.Passives["1"] then
+                        if PathFor.Passives["1"][1] then
+                            Slot1 = PathFor.Passives["1"][1]
+                            Rank1 = PathFor.Passives["1"][2]
+                        end
+                    end
+                    if PathFor.Passives["2"] then
+                        if PathFor.Passives["2"][1] then
+                            Slot2 = PathFor.Passives["2"][1]
+                            Rank2 = PathFor.Passives["2"][2]
+                        end
+                    end
+                    QuirksInfoPet:SetDesc("\nSlot 1: "..Slot1.." Rank: "..Rank1.."\nSlot 2: "..Slot2.." Rank: "..Rank2)
+                    local DamageRank = getClass(PathFor.Talents.Dmg)
+                    local SpeedRank = getClass(PathFor.Talents.Spd)
+                    local CDamageRank = getClass(PathFor.Talents.CDmg)
+                    local ADamageRank = getClass(PathFor.Talents.ADmg)
+                    TalentInfoPet:SetDesc("\nPet: "..PetName .."\nDamage: "..DamageRank.."\nSpeed: "..SpeedRank.."\nCritical Damage: "..CDamageRank.."\nAbility Damage: "..ADamageRank)
+                end
+            end)
+        end)
+
+        -------+ PET SELECT DROPDOWN REFRESH BUTTON +-------
+
+        Tabs.Fighters:AddInput("SearchinQT", {
+            Title = "Search Pet\nBy Name",
+            Default = "",
+            Placeholder =  "input text here",
+            Numeric = false,
+            Finished = true,
+            Callback = function(StrText)
+                local StringText = StrText
+                local success, result = pcall(function()
+                    local PetModules = game:GetService("ReplicatedStorage").ModuleScripts.Config.PetStats:GetChildren()
+                    local NewPets = {}
+                    PlayerPets = PlayerDataStore:GetData("Pets")
+                    for i,v in pairs(PlayerPets) do
+                        local Level = v.Lvl
+                        local PetGUID = v.GUID
+                        local Name
+                        if v.CustomName then
+                            Name = v.CustomName
+                        else
+                            for _,Pet in pairs(PetModules) do
+                                for i2,v2 in pairs(require(game:GetService("ReplicatedStorage").ModuleScripts.Config.PetStats[Pet.Name])) do
+                                    if i2 == v.PetId then
+                                        Name = v2.DisplayName
+                                    end
+                                end
+                            end
+                        end
+                        if string.find(Name,StringText) then
+                        local petString = Name .. " | " .. Level .. " | " .. PetGUID
+                        table.insert(NewPets, petString)
+                        end
+                    end
+                    table.sort(NewPets, function(a, b)
+                        local levelA = tonumber(a:match("| (%d+) |"))
+                        local levelB = tonumber(b:match("| (%d+) |"))
+                        return levelA > levelB
+                    end)
+                    PetQuirk:SetValues(NewPets)
+                end)
+            end
+        })
+        Tabs.Fighters:AddButton({
+            Title = "Refresh Dropdown",
+            Description = "Will Refresh Dropdown For New Pets",
+            Callback = function()
+                local success, result = pcall(function()
+                    local PetModules = game:GetService("ReplicatedStorage").ModuleScripts.Config.PetStats:GetChildren()
+                    local NewPets = {}
+                    PlayerPets = PlayerDataStore:GetData("Pets")
+                    for i,v in pairs(PlayerPets) do
+                        local Level = v.Lvl
+                        local PetGUID = v.GUID
+                        local Name
+                        if v.CustomName then
+                            Name = v.CustomName
+                        else
+                            for _,Pet in pairs(PetModules) do
+                                for i2,v2 in pairs(require(game:GetService("ReplicatedStorage").ModuleScripts.Config.PetStats[Pet.Name])) do
+                                    if i2 == v.PetId then
+                                        Name = v2.DisplayName
+                                    end
+                                end
+                            end
+                        end
+                        local petString = Name .. " | " .. Level .. " | " .. PetGUID
+                        table.insert(NewPets, petString)
+                    end
+                    table.sort(NewPets, function(a, b)
+                        local levelA = tonumber(a:match("| (%d+) |"))
+                        local levelB = tonumber(b:match("| (%d+) |"))
+                        return levelA > levelB
+                    end)
+                    PetQuirk:SetValues(NewPets)
+                end)
+            end
+        })
+
+        -------+ CHANGE PET NAMES TOGGLE +-------
+
+        Tabs.Fighters:AddToggle("ChangeNames", {Title = "Change Pet Names To ID", Default = false })
+        Options.ChangeNames:OnChanged(function()
+            local success, result = pcall(function()
+                if Options.ChangeNames.Value == true then
+                    while Options.ChangeNames.Value == true do task.wait()                                                       
+                        for i,v in pairs(game:GetService("Players").LocalPlayer.PlayerGui.MainGui.Windows.Pets.PetList:GetChildren()) do
+                            local GUID = v:GetAttribute("GUID")
+                            v:SetAttribute("CustomName", GUID)
+                        end
+                    end
+                end
+            end)
+        end)
+        local success, result = pcall(function()
+            for i = 1, #Quirks do 
+            table.insert(QuirkName, Quirks[i].name)
+            QuirkValue[Quirks[i].name] = Quirks[i].value
+            end
+        end)
+
+        local QuirksAmountSelect = Tabs.Fighters:AddDropdown("QuirksAmountSelect", {
+            Title = "Select Amount To Roll\n(Quirks)",
+            Values = {"1", "3"},
+            Multi = false,
+            Default = "1",
+            Callback = function(value)
+                QuirksAmount = tonumber(value)
+            end
+        })
+
+        ----------------{FIGHTERS QUIRK SECTION}-------------
+
+        -------+ QUIRKS DROPDOWN +-------
+
+        Tabs.Fighters:AddParagraph({
+            Title = CenterText("QUIRK SLOT 1")
+        })
+
+      
+
+        Tabs.Fighters:AddDropdown("QuirkDropdown1st", {
+            Title = "Select Quirk For\nFirst Slot",
+            Description = "\nYou can select multiple Quirks.",
+            Values = QuirkName,
+            Multi = true,
+            Default = {},
+            Callback = function(value)
+                selectedQuirk1st = {}
+                for i,v in pairs(value) do
+                    local Something = QuirkValue[i]
+                    if not table.find(selectedQuirk1st, Something) then
+                    table.insert(selectedQuirk1st, Something)
+                    end
+                end
+            end
+        })
+        
+        -------+ QUIRKS TIER DROPDOWN +-------
+        
+        Tabs.Fighters:AddDropdown("QuirkTierDropdown1st", {
+            Title = "Select Tier For\nFirst Slot",
+            Description = "\nYou can select multiple Tiers.",
+            Values = {1,2,3},
+            Multi = true,
+            Default = {},
+            Callback = function(Value)
+                SelectedQuirkTier1st = {}
+                for i,v in pairs(Value) do
+                    if not table.find(SelectedQuirkTier1st, i) then
+                        table.insert(SelectedQuirkTier1st, tonumber(i))
+                    end
+                end
+            end
+        })
+        
+        
+        Tabs.Fighters:AddToggle("AutoQuirk1st", {Title = "Auto Roll Quirks\n First slot", Default = false })
+        Options.AutoQuirk1st:OnChanged(function()
+            if Options.AutoQuirk1st.Value == true then
+                local success, result = pcall(function()
+                local QuirksRoll = true
+                    while Options.AutoQuirk1st.Value == true do HeartBeat:wait()
+                        PlayerPets = PlayerDataStore:GetData("Pets")
+                        if PlayerPets[SelectedIDQ] then
+                            local Passive = PlayerPets[SelectedIDQ].Passives
+                            local PassiveName = "None"
+                            local PassiveTier = "None"
+                            local Slot2 = "Nil"
+                            local Slot1 = "Nil"
+                            local Rank2 = "Nil"
+                            local Rank1 = "Nil"
+                            if Passive["1"] then
+                                if Passive["1"][1] then
+                                    Slot1 = Passive["1"][1]
+                                    Rank1 = Passive["1"][2]
+                                    PassiveName = Passive["1"][1]
+                                    PassiveTier = Passive["1"][2]
+                                end
+                            end
+                            if Passive["2"] then
+                                if Passive["2"][1] then
+                                    Slot2 = Passive["2"][1]
+                                    Rank2 = Passive["2"][2]
+                                end
+                            end
+                            local QuirkString = "Slot 1: "..Slot1.." Rank: "..Rank1
+                            local QuirkStringPet = "\nSlot 1: "..Slot1.." Rank: "..Rank1.."\nSlot 2: "..Slot2.." Rank: "..Rank2
+                            if QuirksRoll and table.find(selectedQuirk1st, PassiveName) and table.find(HighTier,PassiveName) then
+                                Fluent:Notify({Title = "Quirks Sniper",Content = "Found Selected Quirk: "..PassiveName,Duration = 7})
+                                QuirksRoll = false
+                                QuirksInfoPet:SetDesc(QuirkStringPet)
+                            elseif QuirksRoll and table.find(selectedQuirk1st, PassiveName) and table.find(SelectedQuirkTier1st,tonumber(PassiveTier)) then
+                                QuirksRoll = false
+                                QuirksInfoPet:SetDesc(QuirkStringPet)
+                                Fluent:Notify({Title = "Quirks Sniper",Content = "Found Selected Quirk: "..PassiveName..",\nWith Tier: "..PassiveTier,Duration = 7})
+                            elseif QuirksRoll and not table.find(selectedQuirk1st, PassiveName) then
+                                Remote.Machines.PassiveMachine:FireServer(SelectedIDQ, 1, false, QuirksAmount)
+                                QuirksInfoPet:SetDesc(QuirkStringPet)
+                            elseif QuirksRoll and table.find(selectedQuirk1st, PassiveName) and not table.find(SelectedQuirkTier1st, tonumber(PassiveTier)) then
+                                Remote.Machines.PassiveMachine:FireServer(SelectedIDQ, 1, false, QuirksAmount)
+                                QuirksInfoPet:SetDesc(QuirkStringPet)
+                            end
+                        end
+                    end
+                end)
+            end
+        end)
+        
+        
+        
+        Tabs.Fighters:AddParagraph({
+            Title = CenterText("QUIRK SLOT 2")
+        })
+
+        
+        Tabs.Fighters:AddDropdown("QuirkDropdown2nd", {
+            Title = "Select Quirk For\nSecond Slot",
+            Description = "\nYou can select multiple Quirks.",
+            Values = QuirkName,
+            Multi = true,
+            Default = {},
+            Callback = function(value)
+                selectedQuirk2nd = {}
+                for i,v in pairs(value) do
+                    local Something = QuirkValue[i]
+                    if not table.find(selectedQuirk2nd, Something) then
+                    table.insert(selectedQuirk2nd, Something)
+                    end
+                end
+            end
+        })
+        
+        -------+ QUIRKS TIER DROPDOWN +-------
+        
+        Tabs.Fighters:AddDropdown("QuirkTierDropdown2nd", {
+            Title = "Select Tier For\nSecond Slot",
+            Description = "\nYou can select multiple Tiers.",
+            Values = {1,2,3},
+            Multi = true,
+            Default = {},
+            Callback = function(Value)
+                SelectedQuirkTier2nd = {}
+                for i,v in pairs(Value) do
+                    if not table.find(SelectedQuirkTier2nd, i) then
+                        table.insert(SelectedQuirkTier2nd, tonumber(i))
+                    end
+                end
+            end
+        })
+        
+        
+        Tabs.Fighters:AddToggle("AutoQuirk2nd", {Title = "Auto Roll Quirks\nSecond slot", Default = false })
+        Options.AutoQuirk2nd:OnChanged(function()
+            if Options.AutoQuirk2nd.Value == true then
+                local success, result = pcall(function()
+                local QuirksRoll = true
+                    while Options.AutoQuirk2nd.Value == true do HeartBeat:wait()
+                        PlayerPets = PlayerDataStore:GetData("Pets")
+                        if PlayerPets[SelectedIDQ] then
+                            local Passive = PlayerPets[SelectedIDQ].Passives
+                            local PassiveName = "None"
+                            local PassiveTier = "None"
+                            local Slot2 = "Nil"
+                            local Slot1 = "Nil"
+                            local Rank2 = "Nil"
+                            local Rank1 = "Nil"
+                            if Passive["1"] then
+                                if Passive["1"][1] then
+                                    Slot1 = Passive["1"][1]
+                                    Rank1 = Passive["1"][2]
+                                end
+                            end
+                            if Passive["2"] then
+                                if Passive["2"][1] then
+                                    Slot2 = Passive["2"][1]
+                                    Rank2 = Passive["2"][2]
+                                    PassiveName = Passive["2"][1]
+                                    PassiveTier = Passive["2"][2]
+                                end
+                            end
+                            local QuirkString = "Slot 2: "..Slot2.." Rank: "..Rank2
+                            local QuirkStringPet = "\nSlot 1: "..Slot1.." Rank: "..Rank1.."\nSlot 2: "..Slot2.." Rank: "..Rank2
+                            if QuirksRoll and table.find(selectedQuirk2nd, PassiveName) and table.find(HighTier,PassiveName) then
+                                Fluent:Notify({Title = "Quirks Sniper",Content = "Found Selected Quirk On 2nd Slot: "..PassiveName,Duration = 7})
+                                QuirksRoll = false
+                                QuirksInfoPet:SetDesc(QuirkStringPet)
+                            elseif QuirksRoll and table.find(selectedQuirk2nd, PassiveName) and table.find(SelectedQuirkTier2nd,tonumber(PassiveTier)) then
+                                QuirksRoll = false
+                                QuirksInfoPet:SetDesc(QuirkStringPet)
+                                Fluent:Notify({Title = "Quirks Sniper",Content = "Found Selected Quirk On 2nd Slot: "..PassiveName..",\nWith Tier: "..PassiveTier,Duration = 7})
+                            elseif QuirksRoll and not table.find(selectedQuirk2nd, PassiveName) then
+                                Remote.Machines.PassiveMachine:FireServer(SelectedIDQ, 2, false, QuirksAmount)
+                                QuirksInfoPet:SetDesc(QuirkStringPet)
+                            elseif QuirksRoll and table.find(selectedQuirk2nd, PassiveName) and not table.find(SelectedQuirkTier2nd, tonumber(PassiveTier)) then
+                                Remote.Machines.PassiveMachine:FireServer(SelectedIDQ, 2, false, QuirksAmount)
+                                QuirksInfoPet:SetDesc(QuirkStringPet)
+                            end
+                        end
+                    end
+                end)
+            end
+        end)
+
+        ----------------{FIGHTERS TALENT SECTION}-------------
+     
+        -------+ TALENT RANK DROPDOWN +------- 
+        Tabs.Fighters:AddParagraph({
+            Title = CenterText("TALENT")
+        })
+
+        local TalentInfo = Tabs.Fighters:AddParagraph({
+            Title = "Information",
+            Content = "Start Auto Talent First"
+        })
+
+
+        Tabs.Fighters:AddDropdown("PetRank", {
+            Title = "Select Rank",
+            Values = {"C","B","A","S","SS","SSS"},
+            Multi = true,
+            Default = {},
+            Callback = function(value)
+                local success, result = pcall(function()
+                    SelectedRanks = {}
+                    for i,v in pairs(value) do
+                        if not table.find(SelectedRanks, i) then
+                            table.insert(SelectedRanks, i)
+                        end
+                    end
+                end)
+            end
+        })    
+
+        -------+ AUTO TALENT DELAY SLIDER +------- 
+
+        local TalentTime = Tabs.Fighters:AddSlider("TalentTime", {
+            Title = "Select Delay\nFor Auto Roll\n",
+            Description = "Seconds",
+            Default = 0.3,
+            Min = 0.1,
+            Max = 1,
+            Rounding = 1,
+            Callback = function(Time)
+                getgenv().TalentTimeDelay = Time
+            end
+        })
+
+        -------+ AUTO TALENT TOGGLE +------- 
+
+        Tabs.Fighters:AddToggle("AutoRollTalent", {Title = "Auto Roll Talent", Default = false })
+        Options.AutoRollTalent:OnChanged(function()
+            if Options.AutoRollTalent.Value == true then
+                while Options.AutoRollTalent.Value == true do task.wait(getgenv().TalentTimeDelay)
+                    local success, result = pcall(function()
+                        PlayerPets = PlayerDataStore:GetData("Pets")
+                        local PetPath = PlayerPets[SelectedIDQ]
+                        local PetName = PetPath.PetId
+                        local DamageRank = getClass(PetPath.Talents.Dmg)
+                        local SpeedRank = getClass(PetPath.Talents.Spd)
+                        local CDamageRank = getClass(PetPath.Talents.CDmg)
+                        local ADamageRank = getClass(PetPath.Talents.ADmg)
+                        TalentInfo:SetDesc("\nPet: "..PetName .."\nDamage: "..DamageRank.."\nSpeed: "..SpeedRank.."\nCritical Damage: "..CDamageRank.."\nAbility Damage: "..ADamageRank)
+                        if table.find(SelectedRanks,DamageRank) then
+                            Lock1 = true
+                        else
+                            Lock1 = false
+                        end
+                        if table.find(SelectedRanks,SpeedRank) then
+                            Lock2 = true
+                        else
+                            Lock2 = false
+                        end
+                        if table.find(SelectedRanks,CDamageRank) then
+                            Lock3 = true
+                        else
+                            Lock3 = false
+                        end
+                        if table.find(SelectedRanks,ADamageRank) then
+                            Lock4 = true
+                        else
+                            Lock4 = false
+                        end
+                        if not (Lock1 and Lock2 and Lock3 and Lock4) then
+                        local TalentsTable = {["Dmg"] = Lock1,["Spd"] = Lock2,["CDmg"] = Lock3,["ADmg"] = Lock4}
+                        Remote.Machines.TalentMachine:FireServer(SelectedIDQ,TalentsTable)
+                        TalentInfoPet:SetDesc("\nPet: "..PetName .."\nDamage: "..DamageRank.."\nSpeed: "..SpeedRank.."\nCritical Damage: "..CDamageRank.."\nAbility Damage: "..ADamageRank)
+                        TalentInfo:SetDesc("\nPet: "..PetName .."\nDamage: "..DamageRank.."\nSpeed: "..SpeedRank.."\nCritical Damage: "..CDamageRank.."\nAbility Damage: "..ADamageRank)
+                        end
+                    end)                  
+                end
+            end
+        end)
+        
+        ----------------{            [ FIGTHERS TAB ]            }-------------
+
+
+
+
+        ----------------{            [ FUSE TAB ]            }-------------
+
+        -------+ FUSE INFO PARAGRAPH +-------
+            
+      
+        FuseSection:AddParagraph({
+            Title = CenterText("INFORMATION")
+        })
+        local FuseInfo = FuseSection:AddParagraph({
+            Title = "Information",
+            Content = "Start Auto Fuse First"
+        })
+        FuseSection:AddParagraph({
+            Title = CenterText("SELECT PET")
+        })
+        -------+ PET SELECT DROPDOWN +-------
+        local PetFuse = FuseSection:AddDropdown("PetFuse", {
+            Title = "Select Pets",
+            Description = "You Can Select Multiple Pets",
+            Values = {},
+            Multi = true,
+            Default = {},
+            Callback = function(value)
+                local success, result = pcall(function()
+                    SelectedFuse = {}
+                    for i,v in pairs(value) do
+                        if not table.find(SelectedFuse, string.match(i,"%s|%s(%S+)$")) then
+                            table.insert(SelectedFuse, string.match(i,"%s|%s(%S+)$"))
+                        end
+                    end
+                end)
+            end
+        })
+
+        -------+ PET SELECT DROPDOWN REFRESH BUTTON +-------
+        FuseSection:AddInput("Searching", {
+            Title = "Search Pet\nBy Name",
+            Default = "",
+            Placeholder =  "input text here",
+            Numeric = false,
+            Finished = true,
+            Callback = function(StrText)
+                local StringText = StrText
+                local success, result = pcall(function()
+                    local PetModules = game:GetService("ReplicatedStorage").ModuleScripts.Config.PetStats:GetChildren()
+                    local NewPets = {}
+                    PlayerPets = PlayerDataStore:GetData("Pets")
+                    for i,v in pairs(PlayerPets) do
+                        local Level = v.Lvl
+                        local PetGUID = v.GUID
+                        local Name
+                        if v.CustomName then
+                            Name = v.CustomName
+                        else
+                            for _,Pet in pairs(PetModules) do
+                                for i2,v2 in pairs(require(game:GetService("ReplicatedStorage").ModuleScripts.Config.PetStats[Pet.Name])) do
+                                    if i2 == v.PetId then
+                                        Name = v2.DisplayName
+                                    end
+                                end
+                            end
+                        end
+                        if string.find(Name,StringText) then
+                        local petString = Name .. " | " .. Level .. " | " .. PetGUID
+                        table.insert(NewPets, petString)
+                        end
+                    end
+                    table.sort(NewPets, function(a, b)
+                        local levelA = tonumber(a:match("| (%d+) |"))
+                        local levelB = tonumber(b:match("| (%d+) |"))
+                        return levelA > levelB
+                    end)
+                    PetFuse:SetValues(NewPets)
+                end)
+            end
+        })
+        FuseSection:AddButton({
+            Title = "Refresh Dropdown",
+            Description = "Will Refresh Dropdown For New Pets",
+            Callback = function()
+                local success, result = pcall(function()
+                    local PetModules = game:GetService("ReplicatedStorage").ModuleScripts.Config.PetStats:GetChildren()
+                    local NewPets = {}
+                    PlayerPets = PlayerDataStore:GetData("Pets")
+                    for i,v in pairs(PlayerPets) do
+                        local Level = v.Lvl
+                        local PetGUID = v.GUID
+                        local Name
+                        if v.CustomName then
+                            Name = v.CustomName
+                        else
+                            for _,Pet in pairs(PetModules) do
+                                for i2,v2 in pairs(require(game:GetService("ReplicatedStorage").ModuleScripts.Config.PetStats[Pet.Name])) do
+                                    if i2 == v.PetId then
+                                        Name = v2.DisplayName
+                                    end
+                                end
+                            end
+                        end
+                        local petString = Name .. " | " .. Level .. " | " .. PetGUID
+                        table.insert(NewPets, petString)
+                    end
+                    table.sort(NewPets, function(a, b)
+                        local levelA = tonumber(a:match("| (%d+) |"))
+                        local levelB = tonumber(b:match("| (%d+) |"))
+                        return levelA > levelB
+                    end)
+                    PetFuse:SetValues(NewPets)
+                end)
+            end
+        })
+
+        -------+ RARITY FUSE DROPDOWN +-------
+        FuseSection:AddParagraph({
+            Title = CenterText("SETTINGS")
+        })
+        FuseSection:AddDropdown("FuseSettings", {
+            Title = "Select Rarity",
+            Description = "You can select\nmore than 1",
+            Values = {"Common", "Rare", "Epic", "Legendary", "Mythical"},
+            Multi = true,
+            Default = {},
+            Callback = function(value)
+                local success, result = pcall(function()
+                    FuseRarities = {}
+                    for i,_ in pairs(value) do
+                        if not table.find(FuseRarities, i) then
+                            table.insert(FuseRarities, i)
+                        end
+                    end
+                end)
+            end
+        })
+
+        -------+ LVL INPUT +------- 
+
+        local LvlInput = FuseSection:AddInput("LvlInput", {
+            Title = "Input Lvl You Want\nTo Reach",
+            Default = "",
+            Placeholder =  "lvl here 1-110",
+            Numeric = true,
+            Finished = true,
+            Callback = function(Lvl)
+                getgenv().FuseMaxLvl = tonumber(Lvl)
+            end
+        })
+
+        FuseSection:AddToggle("IgnoreGodly", {Title = "Fuse Godly", Default = false })
+        FuseSection:AddToggle("IgnoreLocked", {Title = "Fuse Locked", Default = false })
+
+
+        -------+ AUTO FUSE TOGGLE +------- 
+        FuseSection:AddParagraph({
+            Title = CenterText("START")
+        })
+        FuseSection:AddToggle("AutoFuse", {Title = "Auto Fuse", Default = false })
+        Options.AutoFuse:OnChanged(function()
+            local success, result = pcall(function()
+                if Options.AutoFuse.Value == true then
+                    while Options.AutoFuse.Value == true do task.wait(0.1)
+                        for _,Pet in pairs(SelectedFuse) do
+                            PlayerPets = PlayerDataStore:GetData("Pets")
+                            local PetLevel = PlayerPets[Pet].Lvl
+                            local PetName = PlayerPets[Pet].PetId
+                            if tonumber(PetLevel) < tonumber(getgenv().FuseMaxLvl) then
+                                repeat wait()
+                                    getgenv().FusePet = Pet
+                                    local ToFuse = {}
+                                    local NumberFuse = 1
+                                    PlayerPets = PlayerDataStore:GetData("Pets")
+                                    PetLevel = PlayerPets[Pet].Lvl
+                                    for Data, Value in pairs(PlayerPets) do
+                                        if Data ~= nil and Value ~= nil and Options.AutoFuse.Value == true then
+                                            local PetId = Value.PetId
+                                            local DesGodly, DesLocked,DesID
+                                            DesID = Value.GUID
+                                            if Value.Locked == true then
+                                                DesLocked = true
+                                            else
+                                                DesLocked = false
+                                            end
+                                            if Value.Godly == nil then
+                                                DesGodly = false
+                                            else
+                                                DesGodly = Value.Godly
+                                            end
+                                            if DesGodly == Options.IgnoreGodly.Value and DesLocked == Options.IgnoreLocked.Value then
+                                                if table.find(CommonFuse,PetId) and table.find(FuseRarities,"Common") then
+                                                    ToFuse[NumberFuse] = Data
+                                                    NumberFuse = NumberFuse + 1
+                                                elseif table.find(RareFuse,PetId) and table.find(FuseRarities,"Rare") then
+                                                    ToFuse[NumberFuse] = Data
+                                                    NumberFuse = NumberFuse + 1
+                                                elseif table.find(EpicFuse,PetId) and table.find(FuseRarities,"Epic") then
+                                                    ToFuse[NumberFuse] = Data
+                                                    NumberFuse = NumberFuse + 1
+                                                elseif table.find(LegendaryFuse,PetId) and table.find(FuseRarities,"Legendary") then
+                                                    ToFuse[NumberFuse] = Data
+                                                    NumberFuse = NumberFuse + 1
+                                                elseif table.find(MythicalFuse,PetId) and table.find(FuseRarities,"Mythical") then
+                                                    ToFuse[NumberFuse] = Data
+                                                    NumberFuse = NumberFuse + 1
+                                                end
+                                                FuseInfo:SetDesc("Pet Name: "..PetName.."\nPet Id: "..Pet.."\nPet Lvl: "..PetLevel.."/"..getgenv().FuseMaxLvl)
+                                            end
+                                            local ohString1 = Pet
+                                            game:GetService("ReplicatedStorage").Remote.Data.FusePets:FireServer(ohString1, ToFuse)
+                                            wait()
+                                        end
+                                    end
+                                until PetLevel >= getgenv().FuseMaxLvl or not Options.AutoFuse.Value 
+                            end
+                        end
+                    end
+                end
+            end)
+        end)
+
+
+        ----------------{            [ FUSE TAB ]            }-------------
+
+        
+
+        ----------------{            [ ESSENCE TAB ]            }-------------
+        DeconstructSection:AddParagraph({
+            Title = CenterText("SETTINGS")
+        })
+     
+        
+        -------+ PET NAME SELECT DROPDOWN +-------
+
+        local DeconstructPets = {}
+        local PetDeconstruct = DeconstructSection:AddDropdown("PetDeconstruct", {
+            Title = "Select Pets",
+            Description = "You Can Select Multiple Pets",
+            Values = {},
+            Multi = true,
+            Default = {},
+            Callback = function(value)
+                DeconstructPets = {}
+                local success, result = pcall(function()
+                    for Name,_ in pairs(value) do
+                        local parts = {}
+                        local InputText = Name
+                        for part in string.gmatch(InputText, "[^|]+") do
+                            local trimmedPart = part:match("^%s*(.-)%s*$")
+                            table.insert(parts, trimmedPart)
+                        end
+                        local textBeforePipe = parts[1]
+                        table.insert(DeconstructPets, textBeforePipe)
+                    end
+                end)
+                if success then
+                    warn("No errors\n")
+                else
+                    warn("An error occurred: "..result.."\n")
+                end
+            end
+        })
+        DeconstructSection:AddInput("SearchingDecon", {
+            Title = "Search Pet\nBy Name",
+            Default = "",
+            Placeholder =  "input text here",
+            Numeric = false,
+            Finished = true,
+            Callback = function(StrText)
+                local success, result = pcall(function()
+                    local Path = game:GetService("ReplicatedStorage").ModuleScripts.Config.PetStats
+                    local PetModules = Path:GetChildren()
+                    local PetsTable = {}
+                    for _,v in pairs(PetModules) do
+                        local ModuleToReq = require(Path[v.Name])
+                        for _, v2 in pairs(ModuleToReq) do
+                            local Rarity
+                            if v2.Rarity == "Secret" then
+                                Rarity = "Cosmic"
+                            else
+                                Rarity = v2.Rarity
+                            end
+                            local String = v2.DisplayName .. " | " .. Rarity
+                            if string.find(String, StrText) then
+                                table.insert(PetsTable, String)
+                            end
+                        end
+                    end
+                    table.sort(PetsTable, comparePetsByRarity)
+                    PetDeconstruct:SetValues(PetsTable)
+                end)
+                if success then
+                    warn("No errors\n")
+                else
+                    warn("An error occurred: "..result.."\n")
+                end
+            end
+        })
+        
+        DeconstructSection:AddButton({
+            Title = "Refresh Dropdown",
+            Description = "Will Refresh Dropdown For New Pets",
+            Callback = function()
+                local success, result = pcall(function()
+                    local Path = game:GetService("ReplicatedStorage").ModuleScripts.Config.PetStats
+                    local PetModules = Path:GetChildren()
+                    local PetsTable = {}
+                    for _,v in pairs(PetModules) do
+                        local ModuleToReq = require(Path[v.Name])
+                        for _, v2 in pairs(ModuleToReq) do
+                            local Rarity
+                            if v2.Rarity == "Secret" then
+                                Rarity = "Cosmic"
+                            else
+                                Rarity = v2.Rarity
+                            end
+                            local String = v2.DisplayName .. " | " .. Rarity
+                            table.insert(PetsTable, String)
+                        end
+                    end
+                    table.sort(PetsTable, comparePetsByRarity)
+                    PetDeconstruct:SetValues(PetsTable)
+                end)
+                if success then
+                    warn("No errors\n")
+                else
+                    warn("An error occurred: "..result.."\n")
+                end
+            end
+        })
+        -------+ RARITY SELECT DROPDOWN +-------
+        
+           -------+ LOCKED TOGGLE +------- 
+        
+           local Locked = DeconstructSection:AddToggle("LockedToggle", {Title = "Deconstruct Locked", Default = false})
+        
+           -------+ GODLY TOGGLE +-------
+        
+           local Godly = DeconstructSection:AddToggle("GodlyToggle", {Title = "Deconstruct Godly", Default = false})
+        
+        -------+ DECONSTRUCT BUTTON +-------
+        
+        local AutoDeconstruct = DeconstructSection:AddToggle("AutoDeconstruct", {Title = "Auto Deconstruct", Default = false})
+        AutoDeconstruct:OnChanged(function(Value)
+            while AutoDeconstruct.Value == true do wait(0.1)
+                local success, result = pcall(function()
+                    PlayerPets = PlayerDataStore:GetData("Pets")
+                    for Data, Value in pairs(PlayerPets) do
+                        if Data ~= nil and Value ~= nil then
+                            local PetName = Value.PetId
+                            local DesID = ""
+                            local DesGodly, DesLocked
+                            DesID = Value.GUID
+                            DesGodly = Value.Godly
+                            if Value.Locked == true then
+                                DesLocked = true
+                            else
+                                DesLocked = false
+                            end
+                            local Path = game:GetService("ReplicatedStorage").ModuleScripts.Config.PetStats
+                            local PetModules = Path:GetChildren()
+                            for _,v in pairs(PetModules) do
+                                local ModuleToReq = require(Path[v.Name])
+                                for Pet,Table in pairs(ModuleToReq) do
+                                    if Pet == PetName and table.find(DeconstructPets, Table.DisplayName) then
+                                        if DesID ~= "" and DesGodly == Options.GodlyToggle.Value and DesLocked == Options.LockedToggle.Value then
+                                            Remote.Machines.EssenceMachine:FireServer(DesID)
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end)
+            end
+        end)
+        
+        
+        ----------------{            [ ESSENCE TAB ]            }-------------
+        
+        
+
+        ----------------{            [ OTHERS TAB ]            }-------------
+
+
+        -----------{    [ SPIRIT SECTION ]    }-----------
+    
+        
+        Tabs.Others:AddParagraph({
+            Title = CenterText("SPIRIT")
+        })
+
+        local SpiritTime = Tabs.Others:AddSlider("SpiritTime", {
+            Title = "Select Delay\nFor Spirits Farm\n",
+            Description = "Seconds",
+            Default = 0.5,
+            Min = 0.1,
+            Max = 1,
+            Rounding = 1,
+            Callback = function(Time)
+                getgenv().SpiritTimeDelay = Time
+            end
+        })
+
+        -------+ AUTO COLLECT SPIRIT TOGGLE +-------
+
+        Tabs.Others:AddToggle("CollectSpirit", {Title = "Auto Collect Spirit", Default = false })
+        Options.CollectSpirit:OnChanged(function()
+            local success, result = pcall(function()
+                while Options.CollectSpirit.Value == true do 
+                    local args = {[1] = "TalentToken",[2] = 1}
+                    Remote.Drops.Items:FireServer(unpack(args))
+                    Remote.Drops.CaughtSpirit:FireServer()
+                    task.wait(0.1) 
+                end
+            end) 
+        end)
+    
+        -------+ AUTO FARM SPIRIT TOGGLE +-------
+
+
+
+        Tabs.Others:AddToggle("AutoSpirits", {Title = "Auto Farm Spirits\n(use with Auto Collect)", Default = false })
+        Options.AutoSpirits:OnChanged(function()
+            local ui = game:GetService("ReplicatedStorage").ReplicatedAssets.Gui.TeleportGui
+            ui.Enabled = true
+            local success, result = pcall(function()
+                while Options.AutoSpirits.Value == true do task.wait()
+                    local ui = game:GetService("ReplicatedStorage").ReplicatedAssets.Gui.TeleportGui
+                    ui.Enabled = false
+                    for i,v in pairs(WorldSpirit) do task.wait(getgenv().SpiritTimeDelay)
+                        if Options.AutoSpirits.Value == true then
+                        Remote.Player.Teleport:FireServer(v)
+                        end
+                    end
+                end
+            end) 
+        end)
+    
+       
+
+        
+        -----------{    [ TELEPORT SECTION ]    }-----------
+        Tabs.Others:AddParagraph({
+            Title = CenterText("TELEPORT")
+        })
+
+         -------+ SELECTED WORLD TELEPORT DROPDOWNS +-------
+        Tabs.Others:AddDropdown("teleport", {
+            Title = "Select World\nTo Teleport ",
+            Values = {"Champion City","Green Planet","Pirate Town","Hero Academy","Ninja Village", "Bizarre Bazaar", "Demon Forest", "Cursed City", "Spirit Town"},
+            Multi = false,
+            Default = "",
+            Callback = function(value)
+                local TpWorld = ""
+                if value == "Green Planet" then
+                    TpWorld = "DBZ"
+                elseif value == "Pirate Town" then
+                    TpWorld = "OnePiece"
+                elseif value == "Hero Academy" then
+                    TpWorld = "MHA"
+                elseif value == "Ninja Village" then
+                    TpWorld = "Naruto"
+                elseif value == "Bizarre Bazaar" then
+                    TpWorld = "Jojo"
+                elseif value == "Demon Forest" then
+                    TpWorld = "DemonSlayer"
+                elseif value == "Cursed City" then
+                    TpWorld = "JJK"
+                elseif value == "Spirit Town" then
+                    TpWorld = "Bleach"
+                elseif value == "Champion City" then
+                    TpWorld = "Hub"
+                end
+                Remote.Player.Teleport:FireServer(TpWorld)       
+            end
+        })
+
+        Tabs.Others:AddDropdown("teleportOther", {
+            Title = "Select Place\nTo Teleport",
+            Values = {"Reroll","Laboratory","Raid","Cosmic"},
+            Multi = false,
+            Default = "",
+            Callback = function(value)
+                selectedOther = value
+                if selectedOther == "Reroll" then 
+                    Remote.Player.Teleport:FireServer("Hub")   
+                    wait(4)   
+                    hrp.CFrame = CFrame.new(-1863.50537, 155.639572, -3301.22925, -0.161833197, -2.01007069e-08, -0.986818135, -9.29557498e-09, 1, -1.88447835e-08, 0.986818135, 6.12333029e-09, -0.161833197)   
+                elseif selectedOther == "Laboratory" then 
+                    Remote.Player.Teleport:FireServer("Hub")    
+                    wait(4)  
+                    hrp.CFrame = CFrame.new(-1985.77039, 126.262184, -3187.9624, -0.748909533, -7.67025554e-08, -0.662672222, -1.09437019e-08, 1, -1.03379485e-07, 0.662672222, -7.01697971e-08, -0.748909533)   
+                elseif selectedOther == "Raid" then 
+                    Remote.Player.Teleport:FireServer("Hub") 
+                    wait(4)     
+                    hrp.CFrame = CFrame.new(-2108.68604, 125.703339, -3153.29761, -0.999839664, -1.44924304e-08, -0.017907666, -1.50594328e-08, 1, 3.1527744e-08, 0.017907666, 3.17923678e-08, -0.999839664)   
+                elseif selectedOther == "Cosmic" then 
+                    Remote.Player.Teleport:FireServer("Hub")    
+                    wait(3)  
+                    hrp.CFrame = CFrame.new(-1991.44995, 126.212189, -3421.3103, 0.672023833, -3.83797065e-08, -0.740529537, 1.415175e-08, 1, -3.89847976e-08, 0.740529537, 1.57189248e-08, 0.672023833)   
+                end
+            end
+        })
+
+        -----------{    [ CODE SECTION ]    }-----------
+        Tabs.Others:AddParagraph({
+            Title = CenterText("CODE")
+        })
+
+
+        Tabs.Others:AddButton({
+            Title = "Redeem Codes",
+            Description = "Redeem every codes",
+            Callback = function()
+                local names = {"release", "1million","shutdown1","shutdown2", "shutdown3", "update2", "updatedelay", "MeltedIcecream", "raidbuff", "update1", "100thousand", "towerstuff"}
+                for _, name in ipairs(names) do
+                    Remote.Player.RedeemCode:InvokeServer(name)
+                    wait(0.1)
+                end
+            end
+        })
+
+        -----------{    [ PLAYER SECTION ]    }-----------
+    
+        -------+ WALKSPEED SLIDER +------- 
+        Tabs.Others:AddParagraph({
+            Title = CenterText("PLAYER")
+        })
+
+        Tabs.Others:AddSlider("Playerspeed", {
+            Title = "WalkSpeed",
+            Description = "",
+            Default = 32,
+            Min = 16,
+            Max = 300,
+            Rounding = 1,
+            Callback = function(x)
+                Config.Client.WalkSpeed = tonumber(x)
+            end  
+        })
+    
+        -------+ JUMP POWER SLIDER +------- 
+
+        Tabs.Others:AddSlider("Playerjump", {
+            Title = "JumpPower",
+            Description = "",
+            Default = 32,
+            Min = 16,
+            Max = 300,
+            Rounding = 1,
+            Callback = function(x)
+                Config.Client.JumpPower = tonumber(x)
+            end     
+        })
+    
+        game:GetService("RunService").RenderStepped:Connect(function()
+            local Character = game.Players.LocalPlayer.Character
+            if Character then
+                local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+                if Humanoid then
+                    Humanoid.WalkSpeed = Config.Client.WalkSpeed
+                    Humanoid.JumpPower = Config.Client.JumpPower
+                end
+            end
+        end)
+        
+        -----------{    [ UI SECTION ]    }-----------
+        Tabs.Others:AddParagraph({
+            Title = CenterText("UI")
+        })
+
+        Tabs.Others:AddToggle("OpenTalentsUI", {Title = "Open Talent Machine UI", Default = false })
+        Options.OpenTalentsUI:OnChanged(function()
+            LocalPlayer.PlayerGui.MainGui.Windows.TalentMachine.Visible = Options.OpenTalentsUI.Value
+        end) 
+        Tabs.Others:AddToggle("OpenQuirksUI", {Title = "Open Quirks Machine UI",Default = false})
+        Options.OpenQuirksUI:OnChanged(function()
+            LocalPlayer.PlayerGui.MainGui.Windows.PassiveMachine.Visible = Options.OpenQuirksUI.Value
+        end) 
+        Tabs.Others:AddToggle("OpenAscensionUI", {Title = "Open Ascension Machine UI",Default = false})
+        Options.OpenAscensionUI:OnChanged(function()
+            LocalPlayer.PlayerGui.MainGui.Windows.TierMachine.Visible = Options.OpenAscensionUI.Value
+        end) 
+        Tabs.Others:AddToggle("OpenCosmicUI", {Title = "Open Cosmic Machine UI",Default = false})
+        Options.OpenCosmicUI:OnChanged(function()
+            LocalPlayer.PlayerGui.MainGui.Windows.SecretMachine.Visible = Options.OpenCosmicUI.Value
+        end) 
+        Tabs.Others:AddToggle("OpenReforgeUI", {Title = "Open Reforge Machine UI",Default = false})
+        Options.OpenReforgeUI:OnChanged(function()
+            LocalPlayer.PlayerGui.MainGui.Windows.ReforgeMachine.Visible = Options.OpenReforgeUI.Value
+        end) 
+        Tabs.Others:AddToggle("OpenEssenceUI", {Title = "Open Essence Machine UI",Default = false})
+        Options.OpenEssenceUI:OnChanged(function()
+            LocalPlayer.PlayerGui.MainGui.Windows.EssenceMachine.Visible = Options.OpenEssenceUI.Value
+        end) 
+
+        
+        
+
+
+        ----------------{            [ OTHERS TAB ]            }-------------
+
+
+
+
+
+        getgenv().WebhookDelay = 1
+        getgenv().WebhookURL = ""
+        WebhookSection:AddInput("WebhookURL", {
+            Title = "Input Webhook URL",
+            Default = "",
+            Placeholder =  "webhook here",
+            Numeric = false,
+            Finished = true,
+            Callback = function(web)
+                local success, result = pcall(function()
+                    if string.find(web, "https://discord.com/api/webhooks/") then
+                        getgenv().WebhookURL = web
+                    elseif not string.find(web, "https://discord.com/api/webhooks/") then
+                        Fluent:Notify({Title = "Webhook Input Error",Content = "Please paste valid link",Duration = 7})
+                    end
+                end)
+            end
+        })
+        WebhookSection:AddInput("WebhookTime", {
+            Title = "Input Webhook Delay",
+            Default = "",
+            Placeholder =  "minutes",
+            Numeric = true,
+            Finished = true,
+            Callback = function(mins)
+                getgenv().WebhookDelay = mins
+            end
+        })
+        
+        WebhookSection:AddToggle("WebhookToggle", {Title = "Activate Webhook Messages", Default = false })
+        Options.WebhookToggle:OnChanged(function()
+            local success, result = pcall(function()
+                if Options.WebhookToggle.Value then
+                    while Options.WebhookToggle.Value do task.wait()
+                        if string.find(getgenv().WebhookURL, "https://discord.com/api/webhooks/") and tonumber(getgenv().WebhookDelay) >= 1 then
+                            local TimeString = os.date("%H:%M:%S")
+                            local Coins = formatNumber(PlayerDataStore:GetData("Coins"))
+                            local Gems = formatNumber(PlayerDataStore:GetData("Diamonds"))
+                            local Candies = formatNumber(PlayerDataStore:GetData("HalloweenCoins"))
+                            local PlayTime = disp_time(tonumber(PlayerDataStore:GetData("PlayTime")))
+                            local Kills = formatNumber(tonumber(PlayerDataStore:GetData("TotalKills")))
+                            local TotalOrbs = formatNumberWithCommas(PlayerDataStore:GetData("TotalOrbsOpened"))
+                            local LocalName = game.Players.LocalPlayer.Name
+                            local TQPetId = "Not Selected"
+                            local FusePetId = "Not Selected"
+                            local CurrentOrb = Options.EggDrop.Value
+                            local FuseLevelCap = "110"
+                            local TQPetLevel = "Nil"
+                            local TQPetName = "Nil"
+                            local FusePetLevel = "Nil"
+                            local FusePetName = "Nil"
+                            local DmgRank = "Nil"
+                            local ADmgRank = "Nil"
+                            local CDmgRank = "Nil"
+                            local SpeedRank  = "Nil"
+                            local FirstTier = "Nil"
+                            local FirstQuirkSlot = "Nil"
+                            local SecondQuirkSlot = "Nil"
+                            local SecondTier = "Nil"
+                            PlayerPets = PlayerDataStore:GetData("Pets")
+                            if PlayerPets[FusePet] then
+                                FusePetId = FusePet
+                                FusePetName = PlayerPets[FusePet].PetId
+                                FusePetLevel = PlayerPets[FusePet].Lvl
+                            end
+                            
+                            if PlayerPets[SelectedIDQ] then
+                                TQPetId = SelectedIDQ
+                                TQPetName = PlayerPets[SelectedIDQ].PetId
+                                TQPetLevel = PlayerPets[SelectedIDQ].Lvl
+                            end
+                            local DBZMedals = getMedalAmount("DBZMedal")
+                            local OnePieceMedals = getMedalAmount("OnePieceMedal")
+                            local MHAMedals = getMedalAmount("MHAMedal")
+                            local NarutoMedals = getMedalAmount("NarutoMedal")
+                            local JojoMedals = getMedalAmount("JojoMedal")
+                            local SlayerMedals = getMedalAmount("DemonSlayerMedal")
+                            local CurseMedals = getMedalAmount("JJKMedal")
+                            local BleachMedals = getMedalAmount("BleachMedal")
+                            local HxHMedals = getMedalAmount("HxHMedal")
+                            local TalentTokens = getMedalAmount("TalentToken")
+                            local SumDragon = getMedalAmount("DBZSummon")
+                            local SumPirate = getMedalAmount("OnePieceSummon")
+                            local SumHero = getMedalAmount("MHASummon")
+                            local SumNinja = getMedalAmount("NarutoSummon")
+                            local SumBizarre = getMedalAmount("JojoSummon")
+                            local SumSlayer = getMedalAmount("DemonSlayerSummon")
+                            local SumCursed = getMedalAmount("JJKSummon")
+                            local SumSoul = getMedalAmount("BleachSummon")
+                            local SumHXH = getMedalAmount("HxHSummon")
+                            PlayerOrbs = PlayerDataStore:GetData("OrbsBreakdown")
+                            if CurrentOrb == "Dragon Orb" then
+                                OrbOpen = PlayerOrbs["DBZOrb"]
+                            elseif CurrentOrb == "Pirate Orb" then
+                                OrbOpen = PlayerOrbs["OnePieceOrb"]
+                            elseif CurrentOrb == "Hero Orb" then
+                                OrbOpen = PlayerOrbs["MHAOrb"]
+                            elseif CurrentOrb == "Ninja Orb" then
+                                OrbOpen = PlayerOrbs["NarutoOrb"]
+                            elseif CurrentOrb == "Strange Orb" then
+                                OrbOpen = PlayerOrbs["BizarreOrb"]
+                            elseif CurrentOrb == "Demon Orb" then
+                                OrbOpen = PlayerOrbs["DemonOrb"]
+                            elseif CurrentOrb == "Cursed Orb" then
+                                OrbOpen = PlayerOrbs["JJKOrb"]
+                            elseif CurrentOrb == "Soul Reaper Orb" then
+                                OrbOpen = PlayerOrbs["BleachOrb"]
+                            elseif CurrentOrb == "Black Hole Orb" then
+                                OrbOpen = PlayerOrbs["BlackHoleOrb"]
+                            elseif CurrentOrb == "Hunter Orb" then
+                                OrbOpen = PlayerOrbs["HxHOrb"]
+                            else
+                                OrbOpen = 0
+                                CurrentOrb = "Orb is not selected"
+                            end
+                            local OpenedOrb = formatNumberWithCommas(OrbOpen)
+                            
+                            local MaxOpen = 1
+                            for i = 1, 5 do
+                                PlayerUpgrades = PlayerDataStore:GetData("Upgrades")
+                                if PlayerUpgrades["Open" .. i] then
+                                    MaxOpen = MaxOpen + 1
+                                end
+                            end
+                            local StoreUI = LocalPlayer.PlayerGui.MainGui.Windows.Store.Main.Gamepasses
+                            if StoreUI["232927842"].Button.OwnedOverlay.Visible then
+                                MaxOpen = MaxOpen + 2
+                            end
+                            local timePerOrb = 3.25
+                            if StoreUI["232929208"].Button.OwnedOverlay.Visible then
+                                timePerOrb = 2
+                            end
+                            local OrbPlayTime = tonumber(PlayerDataStore:GetData("PlayTime"))
+                            local LegitOrbs = math.floor(OrbPlayTime / timePerOrb * MaxOpen)
+                            local formatedOrbs = formatNumberWithCommas(LegitOrbs)
+
+                            if PlayerPets[SelectedIDQ] then
+                                
+                                DmgRank = getClass(PlayerPets[SelectedIDQ].Talents.Dmg)
+                                ADmgRank = getClass(PlayerPets[SelectedIDQ].Talents.ADmg)
+                                CDmgRank = getClass(PlayerPets[SelectedIDQ].Talents.CDmg)
+                                SpeedRank = getClass(PlayerPets[SelectedIDQ].Talents.Spd)
+                            end
+                            
+                            if PlayerPets[SelectedIDQ] and PlayerPets[SelectedIDQ].Passives["1"] then
+                                if PlayerPets[SelectedIDQ].Passives["1"][1] then
+                                    FirstQuirkSlot = PlayerPets[SelectedIDQ].Passives["1"][1]
+                                    FirstTier = PlayerPets[SelectedIDQ].Passives["1"][2]
+                                end
+                            end
+                            
+                            if PlayerPets[SelectedIDQ] and PlayerPets[SelectedIDQ].Passives["2"] then
+                                if PlayerPets[SelectedIDQ].Passives["2"][1] then
+                                    SecondQuirkSlot = PlayerPets[SelectedIDQ].Passives["2"][1]
+                                    SecondTier = PlayerPets[SelectedIDQ].Passives["2"][2]
+                                end
+                            end
+                             
+                            local CosmicString = "Dragon: x"..SumDragon.." //// Pirate: x"..SumPirate.."\nHero: x"..SumHero.." //// Ninja: x"..SumNinja.."\nBizarre: x"..SumBizarre.." //// Slayer: x"..SumSlayer.."\nCursed: x"..SumCursed.." //// Soul: x"..SumSoul.."\nHuntsmen: x"..SumHXH
+                            local ItemsString = "Dragon Medals: x"..DBZMedals.." //// One Piece Medals: x"..OnePieceMedals.."\nHero Medals: x"..MHAMedals.." //// Ninja Medals: x"..NarutoMedals.."\nBizarre Medals: x"..JojoMedals.." //// Slayer Medals: x"..SlayerMedals.."\nCursed Medals: x"..CurseMedals.." //// Spirit Medals: x"..BleachMedals.."\nHuntsmen Medals: x"..HxHMedals.."\n------------------------\nTalent Tokens: x"..TalentTokens
+                            local response = request({
+                                Url = getgenv().WebhookURL,
+                                Method = "POST",
+                                Headers = {
+                                    ["Content-Type"] = "application/json"
+                                },
+                                Body = game.HttpService:JSONEncode({
+                                    content = "**ACS Webhook | Magenta Hub**",
+                                    embeds = {
+                                        {
+                                            title = "Currencies:",
+                                            description = "Coins: "..Coins.."\nGems: "..Gems.."\nCandies: "..Candies,
+                                            color = nil,
+                                            fields = {
+                                                {name = "Opening orb: "..CurrentOrb, value = "Opened: "..OpenedOrb.."\nTotal Opened Orbs: "..TotalOrbs.."\nMax Legit Possible: "..formatedOrbs},
+                                                {name = "Cosmic Summons:", value = CosmicString},
+                                                {name = "Quirk Medals/Talent Tokens:", value = ItemsString},
+                                                {name = "Fuse Information:", value = "Pet Name: "..FusePetName.."\nPet Id: "..FusePetId.."\nPet Lvl: "..FusePetLevel.."/"..FuseLevelCap},
+                                                {name = "Auto Quirk/Talent Information:",value = "Pet Name: "..TQPetName.."\nPet Id: "..TQPetId.."\nPet Lvl: "..TQPetLevel.."\n---------------------\nDamage: "..DmgRank.." //// Speed: "..SpeedRank.."\nAbility Damage: "..ADmgRank.." //// Critical Damage: "..CDmgRank.."\n------------------------\nFirst Quirk Slot: "..FirstQuirkSlot..", Tier: "..FirstTier.."\nSecond Quirk Slot: "..SecondQuirkSlot..", Tier: "..SecondTier},
+                                                {name = "Playtime And Kills", value = "Playtime: "..PlayTime.."\nKills: "..Kills},
+                                            },
+                                            
+                                            author = {
+                                                name = tostring(LocalName).."'s stats:"}, footer = {text = "Made by Magenta Hub (rosel4k)\nTime: "..TimeString
+                                            }
+                                        }
+                                    },username = "Magenta Hub",avatar_url = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQhJEzl_Agys-gAZ6A0RhONpI6cBZhrvkDIg&usqp=CAU",attachments = {}
+                                })
+                            })
+                            wait(tonumber(getgenv().WebhookDelay) * 60)
+                        end
+                    end
+                end
+            end)
+        end)
+                        
+    end
+    
+    SaveManager:SetLibrary(Fluent)
+    InterfaceManager:SetLibrary(Fluent)
+    SaveManager:IgnoreThemeSettings()
+    SaveManager:SetIgnoreIndexes({})
+    InterfaceManager:SetFolder("Magenta")
+    SaveManager:SetFolder("Magenta/specific-game")
+    InterfaceManager:BuildInterfaceSection(Tabs.Settings)
+    SaveManager:BuildConfigSection(Tabs.Settings)
+    Window:SelectTab(1)
+    SaveManager:LoadAutoloadConfig()    
+
+
+end)
+if success then
+    warn("No errors\n")
+else
+    warn("An error occurred: "..result.."\n")
+end
+
