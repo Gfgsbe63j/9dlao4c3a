@@ -2225,6 +2225,11 @@ local success, result = pcall(function()
                         end
                     end
                 end)
+                if success then
+                    warn("No errors\n")
+                else
+                    warn("An error occurred: "..result.."\n")
+                end
             end
         end)
         
