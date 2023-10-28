@@ -12,7 +12,6 @@ end
 
 local discordLink = loadstring(game:HttpGet(('https://pastebin.com/raw/qVc2ft0D')))()
 local Notification = loadstring(game:HttpGet(('https://raw.githubusercontent.com/Odrexyo/Script/main/UI/Notification.lua')))()
-local UserInput
 -- SCRIPT --
 
 function executeShit()
@@ -246,7 +245,7 @@ UIStroke_5.Thickness = 2.200000047683716
 
 Input_1.Changed:Connect(function(property)
     if property == "Text" then
-        UserInput = Input_1.Text
+        getgenv().UserInput = Input_1.Text
     end
 end)
 23
@@ -268,7 +267,7 @@ function C9caFsql4bfak9l()
         end
     end
 
-	UserInput = savedKey
+	getgenv().UserInput = savedKey
 	if savedKey then 
 		print("Key Found")
 		print(savedKey)
@@ -280,25 +279,27 @@ end
 
 	
 function l1f9c3V18dqk()
-	local enteredKey = UserInput
-	if PandaAuth:ValidateKey("magentahub", enteredKey) then
-        if isfolder("/Magenta") then
-            if readfile("/Magenta/Key.json") then
-                writefile("/Magenta/Key.json", enteredKey)
+    if getgenv().UserInput then
+	    local enteredKey = getgenv().UserInput
+        if PandaAuth:ValidateKey("magentahub", enteredKey) then
+            if isfolder("/Magenta") then
+                if readfile("/Magenta/Key.json") then
+                    writefile("/Magenta/Key.json", enteredKey)
+                end
+            elseif isfolder("Magenta") then
+                if readfile("Magenta/Key.json") then
+                    writefile("Magenta/Key.json", enteredKey)
+                end
             end
-        elseif isfolder("Magenta") then
-            if readfile("Magenta/Key.json") then
-                writefile("Magenta/Key.json", enteredKey)
-            end
+            typewrite(Input_1,"Success..", 0.06)
+            wait(1)
+            Magenta:Destroy()
+            DestroyBlur()
+            CreateNotification("Script is loading...",19)
+            executeShit()
+        else
+            typewrite(Input_1,"Wrong Key..", 0.06)
         end
-		typewrite(Input_1,"Success..", 0.06)
-		wait(1)
-		Magenta:Destroy()
-		DestroyBlur()
-		CreateNotification("Script is loading...",19)
-		executeShit()
-    else
-		typewrite(Input_1,"Wrong Key..", 0.06)
     end
 end
 
