@@ -13,7 +13,6 @@ end
 
 local discordLink = loadstring(game:HttpGet(('https://pastebin.com/raw/qVc2ft0D')))()
 local Notification = loadstring(game:HttpGet(('https://raw.githubusercontent.com/Odrexyo/Script/main/UI/Notification.lua')))()
-local service_name = "magentahub" 
 
 -- SCRIPT --
 
@@ -250,7 +249,7 @@ Input_1.Changed:Connect(function(property)
         UserInput = Input_1.Text
     end
 end)
-
+23
 
 
 function C9caFsql4bfak9l()
@@ -270,7 +269,7 @@ function C9caFsql4bfak9l()
     end
 
 	UserInput = savedKey
-	if  savedKey  then 
+	if savedKey then 
 		print("Key Found")
 		print(savedKey)
 	else
@@ -282,7 +281,7 @@ end
 	
 function l1f9c3V18dqk()
 	local enteredKey = UserInput
-	if PandaAuth:ValidateKey(service_name, enteredKey) then
+	if PandaAuth:ValidateKey("magentahub", enteredKey) then
         if isfolder("/Magenta") then
             if readfile("/Magenta/Key.json") then
                 writefile("/Magenta/Key.json", enteredKey)
@@ -403,8 +402,8 @@ UITextSizeConstraint_2.MinTextSize = 14
 
 function onKeyClick()
     local KeyLink = PandaAuth:GetLink("magentahub")
-    setclipboard(PandaAuth:GetLink(ServiceName))
-	toclipboard(PandaAuth:GetLink(ServiceName))
+    setclipboard(PandaAuth:GetLink("magentahub"))
+	toclipboard(PandaAuth:GetLink("magentahub"))
 	typewrite(TextLabel_3,"Copied!",0.05)
 	wait(4)
 	typewrite(TextLabel_3," ",0.05)
