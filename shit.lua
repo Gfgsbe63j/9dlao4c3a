@@ -1,5 +1,4 @@
 local oldscript = script
-local UserInput
 local PandaAuth = loadstring(game:HttpGet(('https://pandadevelopment.net/service_api/PandaBetaLib.lua')))()
 
 if islclosure(getgenv().setfenv) then while true do end end -- ANTI SETFENV TAMPERING
@@ -13,10 +12,11 @@ end
 
 local discordLink = loadstring(game:HttpGet(('https://pastebin.com/raw/qVc2ft0D')))()
 local Notification = loadstring(game:HttpGet(('https://raw.githubusercontent.com/Odrexyo/Script/main/UI/Notification.lua')))()
-
+local UserInput
 -- SCRIPT --
 
 function executeShit()
+
     local Link = game:HttpGet("https://raw.githubusercontent.com/Gfgsbe63j/9dlao4c3b/main/fargt/"..game.PlaceId..".lua")
     if Link then	
 	loadstring(Link)()
