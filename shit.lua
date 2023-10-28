@@ -1,5 +1,7 @@
 local oldscript = script
+local UserInput
 local PandaAuth = loadstring(game:HttpGet(('https://pandadevelopment.net/service_api/PandaBetaLib.lua')))()
+
 if islclosure(getgenv().setfenv) then while true do end end -- ANTI SETFENV TAMPERING
 if islclosure(getgenv().tostring) then while true do end end -- ANTI TOSTRING TAMPERING
 if PandaAuth.ValidateKey then
@@ -245,7 +247,7 @@ UIStroke_5.Thickness = 2.200000047683716
 
 Input_1.Changed:Connect(function(property)
     if property == "Text" then
-        getgenv().userinput = Input_1.Text
+        UserInput = Input_1.Text
     end
 end)
 
@@ -267,7 +269,7 @@ function C9caFsql4bfak9l()
         end
     end
 
-	getgenv().userinput = savedKey
+	UserInput = savedKey
 	if  savedKey  then 
 		print("Key Found")
 		print(savedKey)
@@ -279,7 +281,7 @@ end
 
 	
 function l1f9c3V18dqk()
-	local enteredKey = getgenv().userinput
+	local enteredKey = UserInput
 	if PandaAuth:ValidateKey(service_name, enteredKey) then
         if isfolder("/Magenta") then
             if readfile("/Magenta/Key.json") then
