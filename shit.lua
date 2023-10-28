@@ -614,11 +614,5 @@ else
     end)
 	C9caFsql4bfak9l()
 end
-
-
 setfenv(1,{})
 script = oldscript
-
-
-
-
