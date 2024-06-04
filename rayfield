@@ -139,8 +139,6 @@ local Rayfield = game:GetObjects("rbxassetid://17732281019")[1]
 -- 	Rayfield.Parent = CoreGui
 -- end
 
-
-
 for _, Interface in ipairs(PlayerGui:GetChildren()) do
 	if Interface.Name == Rayfield.Name then
 		Interface:Destroy()
@@ -2785,8 +2783,15 @@ function RayfieldLibrary:CreateWindow(Settings)
 
             Slider.Value.FocusLost:Connect(function(enterPressed)
                 if not enterPressed then return end
+                if not tonumber(Slider.Value.Text) then return end
+
+                if SliderSettings.Suffix then
+                    Slider.Value.Text = tostring(SliderSettings.CurrentValue) .. " " .. SliderSettings.Suffix
+                end
+
                 local Current = Slider.Main.Progress.AbsolutePosition.X + Slider.Main.Progress.AbsoluteSize.X
 
+                print("xd")
                 TweenService:Create(Slider.Main.Progress, TweenInfo.new(0.45, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.new(0, Current - Slider.Main.AbsolutePosition.X, 1, 0)}):Play()
             end)
 
@@ -2816,6 +2821,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 						elseif Current >= Location and (Location - Start) > 0 then
 							Start = Location
 						end
+
 						TweenService:Create(Slider.Main.Progress, TweenInfo.new(0.45, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.new(0, Current - Slider.Main.AbsolutePosition.X, 1, 0)}):Play()
 						local NewValue = SliderSettings.Range[1] + (Location - Slider.Main.AbsolutePosition.X) / Slider.Main.AbsoluteSize.X * (SliderSettings.Range[2] - SliderSettings.Range[1])
 
