@@ -2786,13 +2786,13 @@ function RayfieldLibrary:CreateWindow(Settings)
                 if not tonumber(Slider.Value.Text) then return end
 
                 if SliderSettings.Suffix then
-                    Slider.Value.Text = tostring(SliderSettings.CurrentValue) .. " " .. SliderSettings.Suffix
+                    Slider.Value.Text = tostring(Slider.Value.Text) .. " " .. SliderSettings.Suffix
                 end
 
                 local Current = Slider.Main.Progress.AbsolutePosition.X + Slider.Main.Progress.AbsoluteSize.X
 
                 print("xd")
-                TweenService:Create(Slider.Main.Progress, TweenInfo.new(0.45, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.new(0, Current - Slider.Main.AbsolutePosition.X, 1, 0)}):Play()
+                TweenService:Create(Slider.Main.Progress, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.new(0, Current - Slider.Main.AbsolutePosition.X, 1, 0)}):Play()
             end)
 
 			Slider.Main.Interact.MouseButton1Down:Connect(function(X)
@@ -2822,7 +2822,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 							Start = Location
 						end
 
-						TweenService:Create(Slider.Main.Progress, TweenInfo.new(0.45, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.new(0, Current - Slider.Main.AbsolutePosition.X, 1, 0)}):Play()
+						TweenService:Create(Slider.Main.Progress, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.new(0, Current - Slider.Main.AbsolutePosition.X, 1, 0)}):Play()
 						local NewValue = SliderSettings.Range[1] + (Location - Slider.Main.AbsolutePosition.X) / Slider.Main.AbsoluteSize.X * (SliderSettings.Range[2] - SliderSettings.Range[1])
 
 						NewValue = math.floor(NewValue / SliderSettings.Increment + 0.5) * (SliderSettings.Increment * 10000000) / 10000000
