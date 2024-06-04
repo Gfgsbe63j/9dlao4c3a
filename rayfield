@@ -2785,12 +2785,12 @@ function RayfieldLibrary:CreateWindow(Settings)
                 if not enterPressed then return end
                 if not tonumber(Slider.Value.Text) then return end
                 if tonumber(Slider.Value.Text) > tonumber(SliderSettings.Range[2]) then return end
+                
+                local NewVal = tonumber(Slider.Value.Text)
 
                 if SliderSettings.Suffix then
                     Slider.Value.Text = tostring(Slider.Value.Text) .. " " .. SliderSettings.Suffix
                 end
-
-                local NewVal = tonumber(Slider.Value.Text)
 
 				TweenService:Create(Slider.Main.Progress, TweenInfo.new(0.45, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.new(0, Slider.Main.AbsoluteSize.X * ((NewVal + SliderSettings.Range[1]) / (SliderSettings.Range[2] - SliderSettings.Range[1])) > 5 and Slider.Main.AbsoluteSize.X * (NewVal / (SliderSettings.Range[2] - SliderSettings.Range[1])) or 5, 1, 0)}):Play()
             end)
