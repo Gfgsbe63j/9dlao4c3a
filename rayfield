@@ -281,6 +281,7 @@ local function SaveConfiguration()
 	if not CEnabled then return end
 	local Data = {}
 	for i,v in pairs(RayfieldLibrary.Flags) do
+		print(i)
 		if v.Type == "ColorPicker" then
 			Data[i] = PackColor(v.Color)
 		else
@@ -2041,13 +2042,12 @@ function RayfieldLibrary:CreateWindow(Settings)
 			function DropdownSettings:Set(NewOption)
 				if DropdownSettings.MultipleOptions then
 					local CurrOps = {}
-					for i,v in pairs(DropdownSettings.CurrentOption) do
+					for i,v in pairs(NewOption) do
 						if tostring(v):len() > 0 then
 							table.insert(CurrOps,v)
 						end
 					end
-					DropdownSettings.CurrentOption = CurrOps
-					Dropdown.Selected.Text = table.concat(DropdownSettings.CurrentOption, ", ")
+					Dropdown.Selected.Text = table.concat(CurrOps, ", ")
 				else
 					Dropdown.Selected.Text = NewOption
 				end
