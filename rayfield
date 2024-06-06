@@ -1780,7 +1780,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 
 			Dropdown.List.Visible = false
 
-			if DropdownSettings.Multi then
+			if DropdownSettings.MultipleOptions then
 				Dropdown.Selected.Text = table.concat(DropdownSettings.CurrentOption, ", ")
 			else
 				Dropdown.Selected.Text = DropdownSettings.CurrentOption
@@ -1861,7 +1861,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 							if DropdownOpt:FindFirstChild("Interact") then
 								TweenService:Create(DropdownOpt.Interact.UIStroke, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {Transparency = 0}):Play()
 
-								if (DropdownSettings.Multi and table.find(DropdownSettings.CurrentOption, DropdownOpt.Name)) or (not DropdownSettings.Multi and DropdownSettings.CurrentOption == DropdownOpt.Name) then
+								if (DropdownSettings.MultipleOptions and table.find(DropdownSettings.CurrentOption, DropdownOpt.Name)) or (not DropdownSettings.MultipleOptions and DropdownSettings.CurrentOption == DropdownOpt.Name) then
 									TweenService:Create(DropdownOpt.Interact.Icon, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {ImageTransparency = 0}):Play()
 									TweenService:Create(DropdownOpt.Interact.Shadow, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {ImageTransparency = 0.7}):Play()
 								end
@@ -1890,7 +1890,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 				DropdownOption.Parent = Dropdown.List
 				DropdownOption.Visible = true
 
-				if (DropdownSettings.Multi and table.find(DropdownSettings.CurrentOption, Option)) or (not DropdownSettings.Multi and DropdownSettings.CurrentOption == Option) then
+				if (DropdownSettings.MultipleOptions and table.find(DropdownSettings.CurrentOption, Option)) or (not DropdownSettings.MultipleOptions and DropdownSettings.CurrentOption == Option) then
 					DropdownOption.Interact.UIStroke.Color = Color3.fromRGB(62, 158, 231)
 					DropdownOption.Interact.Icon.ImageTransparency = 0
 					DropdownOption.Interact.Shadow.ImageTransparency = 0.7
@@ -1903,9 +1903,9 @@ function RayfieldLibrary:CreateWindow(Settings)
 
 				DropdownOption.Interact.Button.ZIndex = 50
 				DropdownOption.Interact.Button.MouseButton1Click:Connect(function()
-					if (DropdownSettings.Multi and not table.find(DropdownSettings.CurrentOption, Option)) or (not DropdownSettings.Multi and DropdownSettings.CurrentOption ~= Option) then
+					if (DropdownSettings.MultipleOptions and not table.find(DropdownSettings.CurrentOption, Option)) or (not DropdownSettings.MultipleOptions and DropdownSettings.CurrentOption ~= Option) then
 
-						if DropdownSettings.Multi then
+						if DropdownSettings.MultipleOptions then
 							table.insert(DropdownSettings.CurrentOption, Option)
 							Dropdown.Selected.Text = table.concat(DropdownSettings.CurrentOption, ", ")
 						else
@@ -1928,7 +1928,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 							TweenService:Create(Dropdown.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {Transparency = 0}):Play()
 						end
 
-						if not DropdownSettings.Multi then
+						if not DropdownSettings.MultipleOptions then
 							for _, droption in ipairs(Dropdown.List:GetChildren()) do
 								if droption.ClassName == "Frame" and droption.Name ~= "Placeholder" and droption.Name ~= "Search" then
 									TweenService:Create(droption.Interact.UIStroke, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {Color = Color3.fromRGB(50, 50, 50)}):Play()
@@ -1963,7 +1963,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 						-- Debounce = false	
 						SaveConfiguration()
 					else
-						if DropdownSettings.Multi then
+						if DropdownSettings.MultipleOptions then
 							for i2,v2 in pairs(DropdownSettings.CurrentOption) do
 								if v2 == Option then
 									table.remove(DropdownSettings.CurrentOption, i2)
@@ -2025,7 +2025,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 			end)
 
 			function DropdownSettings:Set(NewOption)
-				if DropdownSettings.Multi then
+				if DropdownSettings.MultipleOptions then
 					Dropdown.Selected.Text = table.concat(NewOption, ", ")
 				else
 					Dropdown.Selected.Text = NewOption
@@ -2046,7 +2046,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 				end
 
 				for _, droption in ipairs(Dropdown.List:GetChildren()) do
-					if (DropdownSettings.Multi and not table.find(NewOption, droption.Name)) or (not DropdownSettings.Multi and droption.Name ~= NewOption) then
+					if (DropdownSettings.MultipleOptions and not table.find(NewOption, droption.Name)) or (not DropdownSettings.MultipleOptions and droption.Name ~= NewOption) then
 						if droption.ClassName == "Frame" and droption.Name ~= "Placeholder" and droption.Name ~= "Search" then
 							droption.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 						end
@@ -2078,7 +2078,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 				Dropdown.List.Visible = false
 
 				DropdownSettings.Options = NewOptions
-				if DropdownSettings.Multi then
+				if DropdownSettings.MultipleOptions then
 					DropdownSettings.CurrentOption = {}
 					Dropdown.Selected.Text = table.concat(DropdownSettings.CurrentOption, ", ")
 				else
@@ -2097,7 +2097,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 					DropdownOption.Parent = Dropdown.List
 					DropdownOption.Visible = true
 
-					if (DropdownSettings.Multi and table.find(DropdownSettings.CurrentOption, Option)) or (not DropdownSettings.Multi and DropdownSettings.CurrentOption == Option) then
+					if (DropdownSettings.MultipleOptions and table.find(DropdownSettings.CurrentOption, Option)) or (not DropdownSettings.MultipleOptions and DropdownSettings.CurrentOption == Option) then
 						DropdownOption.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 					end
 
@@ -2107,8 +2107,8 @@ function RayfieldLibrary:CreateWindow(Settings)
 
 					DropdownOption.Interact.ZIndex = 50
 					DropdownOption.Interact.MouseButton1Click:Connect(function()
-						if (DropdownSettings.Multi and not table.find(DropdownSettings.CurrentOption, Option)) or (not DropdownSettings.Multi and DropdownSettings.CurrentOption ~= Option) then
-							if DropdownSettings.Multi then
+						if (DropdownSettings.MultipleOptions and not table.find(DropdownSettings.CurrentOption, Option)) or (not DropdownSettings.MultipleOptions and DropdownSettings.CurrentOption ~= Option) then
+							if DropdownSettings.MultipleOptions then
 								table.insert(DropdownSettings.CurrentOption, Option)
 								Dropdown.Selected.Text = table.concat(DropdownSettings.CurrentOption, ", ")
 							else
@@ -2154,7 +2154,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 							-- Debounce = false	
 							SaveConfiguration()
 						else
-							if DropdownSettings.Multi then
+							if DropdownSettings.MultipleOptions then
 								for i2,v2 in pairs(DropdownSettings.CurrentOption) do
 									if v2 == Option then
 										table.remove(DropdownSettings.CurrentOption, i2)
