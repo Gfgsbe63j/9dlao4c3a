@@ -2132,6 +2132,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 					end
 				end
 				for _, Option in ipairs(DropdownSettings.Options) do
+					print(_,Option,"ipairs")
 					local DropdownOption = Elements.Template.Dropdown.List.Template:Clone()
 					DropdownOption.Name = Option
 					DropdownOption.Title.Text = Option
@@ -2147,7 +2148,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 					DropdownOption.Title.TextTransparency = 1
 
 					DropdownOption.Interact.ZIndex = 50
-					DropdownOption:WaitForChild("Interact").MouseButton1Click:Connect(function()
+					DropdownOption.Interact.MouseButton1Click:Connect(function()
 						if (DropdownSettings.MultipleOptions and not table.find(DropdownSettings.CurrentOption, Option)) or (not DropdownSettings.MultipleOptions and DropdownSettings.CurrentOption ~= Option) then
 							if DropdownSettings.MultipleOptions then
 								table.insert(DropdownSettings.CurrentOption, Option)
