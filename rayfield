@@ -268,7 +268,6 @@ local function LoadConfiguration(Configuration)
 				if RayfieldLibrary.Flags[FlagName].Type == "ColorPicker" then
 					RayfieldLibrary.Flags[FlagName]:Set(UnpackColor(FlagValue))
 				else
-					print(FlagName,FlagValue,"Load")
 					if RayfieldLibrary.Flags[FlagName].CurrentValue or RayfieldLibrary.Flags[FlagName].CurrentKeybind or RayfieldLibrary.Flags[FlagName].CurrentOption or RayfieldLibrary.Flags[FlagName].Color ~= FlagValue then RayfieldLibrary.Flags[FlagName]:Set(FlagValue) end
 				end    
 			end)
@@ -282,7 +281,6 @@ local function SaveConfiguration()
 	if not CEnabled then return end
 	local Data = {}
 	for i,v in pairs(RayfieldLibrary.Flags) do
-		print(i,v,"Save")
 		if v.Type == "ColorPicker" then
 			Data[i] = PackColor(v.Color)
 		else
