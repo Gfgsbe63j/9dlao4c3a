@@ -1707,6 +1707,10 @@ function RayfieldLibrary:CreateWindow(Settings)
 
 			Input.InputFrame.InputBox.PlaceholderText = InputSettings.PlaceholderText
 
+			print(tonumber(tostring(InputSettings.PlaceholderText):len()),"Settings")
+
+			print(tonumber(Input.InputFrame.InputBox.PlaceholderText:len()),"Text")
+
 			Input.InputFrame.Size = UDim2.new(0, 10 * tonumber(tostring(InputSettings.PlaceholderText):len()) , 0, 30)
 
 			local function calculateTextSize()
@@ -1714,6 +1718,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 			end
 			
 			if tonumber(calculateTextSize().X + 24) <= 255 then
+				print("gg")
 				Input.InputFrame.Size = UDim2.new(0, calculateTextSize().X + 24, 0, 30)
 			else
 				print("hi")
@@ -1721,7 +1726,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 			end
 
 			Input.InputFrame.InputBox.FocusLost:Connect(function()
-
 
 				local Success, Response = pcall(function()
 					InputSettings.Callback(Input.InputFrame.InputBox.Text)
