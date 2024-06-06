@@ -1707,22 +1707,18 @@ function RayfieldLibrary:CreateWindow(Settings)
 
 			Input.InputFrame.InputBox.PlaceholderText = InputSettings.PlaceholderText
 
-			print(tonumber(tostring(InputSettings.PlaceholderText):len()),"Settings")
-
-			print(tonumber(Input.InputFrame.InputBox.PlaceholderText:len()),"Text")
-
-			Input.InputFrame.Size = UDim2.new(0, 10 * tonumber(tostring(InputSettings.PlaceholderText):len()) , 0, 30)
+			Input.InputFrame.Size = UDim2.new(0, 15 * tonumber(tostring(InputSettings.PlaceholderText):len()) , 0, 30)
 
 			local function calculateTextSize()
 				return TextService:GetTextSize( Input.InputFrame.InputBox.Text,  Input.InputFrame.InputBox.TextSize,  Input.InputFrame.InputBox.Font, Vector2.new(math.huge,  Input.InputFrame.InputBox.AbsoluteSize.Y))
 			end
 			
-			if tonumber(calculateTextSize().X + 24) <= 255 then
-				print("gg")
-				Input.InputFrame.Size = UDim2.new(0, calculateTextSize().X + 24, 0, 30)
-			else
-				print("hi")
-				Input.InputFrame.Size = UDim2.new(0, 255, 0, 30)
+			if Input.InputFrame.InputBox.Text:len() > 0 then
+				if tonumber(calculateTextSize().X + 24) <= 255 then
+					Input.InputFrame.Size = UDim2.new(0, calculateTextSize().X + 24, 0, 30)
+				else
+					Input.InputFrame.Size = UDim2.new(0, 255, 0, 30)
+				end
 			end
 
 			Input.InputFrame.InputBox.FocusLost:Connect(function()
