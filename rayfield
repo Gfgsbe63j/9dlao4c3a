@@ -1707,8 +1707,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 
 			Input.InputFrame.InputBox.PlaceholderText = InputSettings.PlaceholderText
 
-			Input.InputFrame.Size = UDim2.new(0, 15 * tonumber(tostring(InputSettings.PlaceholderText):len()) , 0, 30)
-
 			local function calculateTextSize()
 				return TextService:GetTextSize( Input.InputFrame.InputBox.Text,  Input.InputFrame.InputBox.TextSize,  Input.InputFrame.InputBox.Font, Vector2.new(math.huge,  Input.InputFrame.InputBox.AbsoluteSize.Y))
 			end
@@ -1719,6 +1717,8 @@ function RayfieldLibrary:CreateWindow(Settings)
 				else
 					Input.InputFrame.Size = UDim2.new(0, 255, 0, 30)
 				end
+			else
+				Input.InputFrame.Size = UDim2.new(0, 15 * tonumber(tostring(InputSettings.PlaceholderText):len()) , 0, 30)
 			end
 
 			Input.InputFrame.InputBox.FocusLost:Connect(function()
@@ -1740,6 +1740,11 @@ function RayfieldLibrary:CreateWindow(Settings)
 				if InputSettings.RemoveTextAfterFocusLost then
 					Input.InputFrame.InputBox.Text = ""
 				end
+
+				if Input.InputFrame.InputBox.Text == "" then
+					Input.InputFrame.Size = UDim2.new(0, 15 * tonumber(tostring(InputSettings.PlaceholderText):len()) , 0, 30)
+				end
+
 				SaveConfiguration()
 			end)
 
@@ -1752,10 +1757,14 @@ function RayfieldLibrary:CreateWindow(Settings)
 			end)
 
 			Input.InputFrame.InputBox:GetPropertyChangedSignal("Text"):Connect(function()
-				if tonumber(calculateTextSize().X + 24) <= 255 then
-					TweenService:Create(Input.InputFrame, TweenInfo.new(0.55, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.new(0, calculateTextSize().X + 24, 0, 30)}):Play()
+				if Input.InputFrame.InputBox.Text:len() > 0 then
+					if tonumber(calculateTextSize().X + 24) <= 255 then
+						TweenService:Create(Input.InputFrame, TweenInfo.new(0.55, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.new(0, calculateTextSize().X + 24, 0, 30)}):Play()
+					else
+						TweenService:Create(Input.InputFrame, TweenInfo.new(0.55, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.new(0, 255, 0, 30)}):Play()
+					end
 				else
-					TweenService:Create(Input.InputFrame, TweenInfo.new(0.55, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.new(0, 255, 0, 30)}):Play()
+					TweenService:Create(Input.InputFrame, TweenInfo.new(0.55, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.new(0, 15 * tonumber(tostring(InputSettings.PlaceholderText):len()) , 0, 30)}):Play()
 				end
 			end)
 			
