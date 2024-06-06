@@ -1780,9 +1780,16 @@ function RayfieldLibrary:CreateWindow(Settings)
 
 			Dropdown.List.Visible = false
 
-			if not DropdownSettings.MultipleOptions then
-				--Dropdown.Selected.Text = table.concat(DropdownSettings.CurrentOption, ", ")
-			--else
+			if DropdownSettings.MultipleOptions then
+				local CurrOps = {}
+				for i,v in pairs(DropdownSettings.CurrentOption) do
+					if tostring(v):len() > 0 then
+						table.insert(CurrOps,v)
+					end
+				end
+				DropdownSettings.CurrentOption = CurrOps
+				Dropdown.Selected.Text = table.concat(DropdownSettings.CurrentOption, ", ")
+			else
 				Dropdown.Selected.Text = DropdownSettings.CurrentOption
 			end
 
@@ -1907,7 +1914,14 @@ function RayfieldLibrary:CreateWindow(Settings)
 
 						if DropdownSettings.MultipleOptions then
 							table.insert(DropdownSettings.CurrentOption, Option)
-							--Dropdown.Selected.Text = table.concat(DropdownSettings.CurrentOption, ", ")
+							local CurrOps = {}
+							for i,v in pairs(DropdownSettings.CurrentOption) do
+								if tostring(v):len() > 0 then
+									table.insert(CurrOps,v)
+								end
+							end
+							DropdownSettings.CurrentOption = CurrOps
+							Dropdown.Selected.Text = table.concat(DropdownSettings.CurrentOption, ", ")
 						else
 							DropdownSettings.CurrentOption = Option
 							Dropdown.Selected.Text = DropdownSettings.CurrentOption
@@ -2026,7 +2040,14 @@ function RayfieldLibrary:CreateWindow(Settings)
 
 			function DropdownSettings:Set(NewOption)
 				if DropdownSettings.MultipleOptions then
-					--Dropdown.Selected.Text = table.concat(NewOption, ", ")
+					local CurrOps = {}
+					for i,v in pairs(DropdownSettings.CurrentOption) do
+						if tostring(v):len() > 0 then
+							table.insert(CurrOps,v)
+						end
+					end
+					DropdownSettings.CurrentOption = CurrOps
+					Dropdown.Selected.Text = table.concat(DropdownSettings.CurrentOption, ", ")
 				else
 					Dropdown.Selected.Text = NewOption
 				end
@@ -2080,7 +2101,14 @@ function RayfieldLibrary:CreateWindow(Settings)
 				DropdownSettings.Options = NewOptions
 				if DropdownSettings.MultipleOptions then
 					DropdownSettings.CurrentOption = {}
-					--Dropdown.Selected.Text = table.concat(DropdownSettings.CurrentOption, ", ")
+					local CurrOps = {}
+					for i,v in pairs(DropdownSettings.CurrentOption) do
+						if tostring(v):len() > 0 then
+							table.insert(CurrOps,v)
+						end
+					end
+					DropdownSettings.CurrentOption = CurrOps
+					Dropdown.Selected.Text = table.concat(DropdownSettings.CurrentOption, ", ")
 				else
 					DropdownSettings.CurrentOption = ""
 					Dropdown.Selected.Text = DropdownSettings.CurrentOption
@@ -2110,7 +2138,14 @@ function RayfieldLibrary:CreateWindow(Settings)
 						if (DropdownSettings.MultipleOptions and not table.find(DropdownSettings.CurrentOption, Option)) or (not DropdownSettings.MultipleOptions and DropdownSettings.CurrentOption ~= Option) then
 							if DropdownSettings.MultipleOptions then
 								table.insert(DropdownSettings.CurrentOption, Option)
-								--Dropdown.Selected.Text = table.concat(DropdownSettings.CurrentOption, ", ")
+								local CurrOps = {}
+								for i,v in pairs(DropdownSettings.CurrentOption) do
+									if tostring(v):len() > 0 then
+										table.insert(CurrOps,v)
+									end
+								end
+								DropdownSettings.CurrentOption = CurrOps
+								Dropdown.Selected.Text = table.concat(DropdownSettings.CurrentOption, ", ")
 							else
 								DropdownSettings.CurrentOption = Option
 								Dropdown.Selected.Text = DropdownSettings.CurrentOption
