@@ -2146,7 +2146,8 @@ function RayfieldLibrary:CreateWindow(Settings)
 
 					if DropdownOption2:FindFirstChild("Interact") then
 						--pcall(function()
-							DropdownOption2.Interact.ZIndex = 50
+						DropdownOption2.Interact.ZIndex = 50
+						DropdownOption2.Interact.Button.ZIndex = 50
 							DropdownOption2.Interact.Button.MouseButton1Click:Connect(function()
 								if (DropdownSettings.MultipleOptions and not table.find(DropdownSettings.CurrentOption, Option)) or (not DropdownSettings.MultipleOptions and DropdownSettings.CurrentOption ~= Option) then
 									print(DropdownOption2.Name,"not")
