@@ -2179,13 +2179,16 @@ function RayfieldLibrary:CreateWindow(Settings)
 									end
 									for _, droption in ipairs(Dropdown.List:GetChildren()) do
 										if droption.ClassName == "Frame" and droption.Name ~= "Placeholder" then
-											if droption.Interact.UIStroke.Color == Color3.fromRGB(62, 158, 231) and droption.Name ~= DropdownOption2 then
-												TweenService:Create(DropdownOption2.Interact.UIStroke, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {Color = Color3.fromRGB(50, 50, 50)}):Play()
-												TweenService:Create(DropdownOption2.Interact.Icon, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {ImageTransparency = 1}):Play()
-												TweenService:Create(DropdownOption2.Interact.Shadow, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {ImageTransparency = 1}):Play()
-												TweenService:Create(DropdownOption2.Interact, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {BackgroundColor3 = Color3.fromRGB(35, 35, 35)}):Play()
-											end
 											TweenService:Create(droption, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {BackgroundColor3 = Color3.fromRGB(30, 30, 30)}):Play()
+										end
+										
+										if droption.ClassName == "Frame" and droption.Name ~= "Placeholder" and droption.Name ~= "Search" then
+											if droption.Interact.UIStroke.Color == Color3.fromRGB(62, 158, 231) and droption.Name ~= DropdownOption2 then
+												TweenService:Create(droption.Interact.UIStroke, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {Color = Color3.fromRGB(50, 50, 50)}):Play()
+												TweenService:Create(droption.Interact.Icon, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {ImageTransparency = 1}):Play()
+												TweenService:Create(droption.Interact.Shadow, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {ImageTransparency = 1}):Play()
+												TweenService:Create(droption.Interact, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {BackgroundColor3 = Color3.fromRGB(35, 35, 35)}):Play()
+											end
 										end
 									end
 
