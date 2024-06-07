@@ -2183,10 +2183,13 @@ function RayfieldLibrary:CreateWindow(Settings)
 										end
 									end
 
-									TweenService:Create(DropdownOption2.Interact.UIStroke, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {Color = Color3.fromRGB(62, 158, 231)}):Play()
-									TweenService:Create(DropdownOption2.Interact.Icon, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {ImageTransparency = 0}):Play()
-									TweenService:Create(DropdownOption2.Interact.Shadow, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {ImageTransparency = 0.7}):Play()
-									TweenService:Create(DropdownOption2.Interact, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {BackgroundColor3 = Color3.fromRGB(43, 105, 159)}):Play()
+									if (DropdownSettings.MultipleOptions and table.find(DropdownSettings.CurrentOption, Option)) or (not DropdownSettings.MultipleOptions and DropdownSettings.CurrentOption == DropdownOption2.Name) then
+										DropdownOption2.Interact.UIStroke.Color = Color3.fromRGB(62, 158, 231)
+										DropdownOption2.Interact.Icon.ImageTransparency = 0
+										DropdownOption2.Interact.Shadow.ImageTransparency = 0.7
+										DropdownOption2.Interact.BackgroundColor3 = Color3.fromRGB(43, 105, 159)
+									end
+
 									-- Debounce = true
 									-- task.wait(0.2)
 									-- TweenService:Create(DropdownOption2.UIStroke, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {Transparency = 0}):Play()
