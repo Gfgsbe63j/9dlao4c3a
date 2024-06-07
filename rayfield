@@ -2149,8 +2149,8 @@ function RayfieldLibrary:CreateWindow(Settings)
 							DropdownOption2.Interact.ZIndex = 50
 							DropdownOption2.Interact.Button.MouseButton1Click:Connect(function()
 								if (DropdownSettings.MultipleOptions and not table.find(DropdownSettings.CurrentOption, Option)) or (not DropdownSettings.MultipleOptions and DropdownSettings.CurrentOption ~= Option) then
+									print(DropdownOption2.Name,"not")
 									if DropdownSettings.MultipleOptions then
-										print(DropdownOption2.Name,"not")
 										table.insert(DropdownSettings.CurrentOption, Option)
 										local CurrOps = {}
 										for i,v in pairs(DropdownSettings.CurrentOption) do
@@ -2203,7 +2203,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 									-- Debounce = false	
 									SaveConfiguration()
 								else
-									print(Dropdown.Name,"found")
+									print(DropdownOption2.Name,"found")
 									if DropdownSettings.MultipleOptions then
 										for i2,v2 in pairs(DropdownSettings.CurrentOption) do
 											if v2 == Option then
@@ -2238,6 +2238,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 											TweenService:Create(droption, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {BackgroundColor3 = Color3.fromRGB(30, 30, 30)}):Play()
 										end
 									end
+
 									print("no work")
 									TweenService:Create(DropdownOption2.UIStroke, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {Transparency = 1}):Play()
 									TweenService:Create(DropdownOption2, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {BackgroundColor3 = Color3.fromRGB(40, 40, 40)}):Play()
