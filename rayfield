@@ -2183,12 +2183,21 @@ function RayfieldLibrary:CreateWindow(Settings)
 										end
 									end
 
-									if (DropdownSettings.MultipleOptions and table.find(DropdownSettings.CurrentOption, Option)) or (not DropdownSettings.MultipleOptions and DropdownSettings.CurrentOption == DropdownOption2.Name) then
-										DropdownOption2.Interact.UIStroke.Color = Color3.fromRGB(62, 158, 231)
-										DropdownOption2.Interact.Icon.ImageTransparency = 0
-										DropdownOption2.Interact.Shadow.ImageTransparency = 0.7
-										DropdownOption2.Interact.BackgroundColor3 = Color3.fromRGB(43, 105, 159)
+									if DropdownOption2:FindFirstChild("Title") then
+										TweenService:Create(DropdownOption2.Title, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {TextTransparency = 1}):Play()
+									else
+										TweenService:Create(DropdownOption2.Search, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {TextTransparency = 1}):Play()
 									end
+									if DropdownOption2:FindFirstChild("Icon") then
+										TweenService:Create(DropdownOption2.Icon, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {ImageTransparency = 1}):Play()
+									end
+									if DropdownOption2:FindFirstChild("Interact") then
+										TweenService:Create(DropdownOption2.Interact.UIStroke, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {Transparency = 1}):Play()
+										TweenService:Create(DropdownOption2.Interact.Icon, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {ImageTransparency = 1}):Play()
+										TweenService:Create(DropdownOption2.Interact.Shadow, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {ImageTransparency = 1}):Play()
+										TweenService:Create(DropdownOption2.Interact, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {BackgroundTransparency = 1}):Play()
+									end
+
 
 									-- Debounce = true
 									-- task.wait(0.2)
