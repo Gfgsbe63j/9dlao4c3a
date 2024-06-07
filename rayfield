@@ -2089,7 +2089,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 			end
 
 			function DropdownSettings:UpdateOptions(NewOptions)
-				print("tween 2")
 				TweenService:Create(Dropdown, TweenInfo.new(0.5, Enum.EasingStyle.Quint), {Size = UDim2.new(1, -10,-0.334, 180)}):Play()
 				for _, DropdownOpt in ipairs(Dropdown.List:GetChildren()) do
 					if DropdownOpt.ClassName == "Frame" and DropdownOpt.Name ~= "Placeholder" then
@@ -2151,7 +2150,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 						DropdownOption2.Interact.ZIndex = 50
 							DropdownOption2.Interact.Button.MouseButton1Click:Connect(function()
 								if (DropdownSettings.MultipleOptions and not table.find(DropdownSettings.CurrentOption, Option)) or (not DropdownSettings.MultipleOptions and DropdownSettings.CurrentOption ~= Option) then
-									print(DropdownOption2.Name,"not")
 									if DropdownSettings.MultipleOptions then
 										table.insert(DropdownSettings.CurrentOption, Option)
 										local CurrOps = {}
@@ -2184,9 +2182,11 @@ function RayfieldLibrary:CreateWindow(Settings)
 											TweenService:Create(droption, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {BackgroundColor3 = Color3.fromRGB(30, 30, 30)}):Play()
 										end
 									end
-									print("nice works")
-									TweenService:Create(DropdownOption2.UIStroke, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {Transparency = 1}):Play()
-									TweenService:Create(DropdownOption2, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {BackgroundColor3 = Color3.fromRGB(40, 40, 40)}):Play()
+
+									TweenService:Create(DropdownOption.Interact.UIStroke, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {Color = Color3.fromRGB(62, 158, 231)}):Play()
+									TweenService:Create(DropdownOption.Interact.Icon, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {ImageTransparency = 0}):Play()
+									TweenService:Create(DropdownOption.Interact.Shadow, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {ImageTransparency = 0.7}):Play()
+									TweenService:Create(DropdownOption.Interact, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {BackgroundColor3 = Color3.fromRGB(43, 105, 159)}):Play()
 									-- Debounce = true
 									-- task.wait(0.2)
 									-- TweenService:Create(DropdownOption2.UIStroke, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {Transparency = 0}):Play()
