@@ -2088,7 +2088,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 			end
 
 			function DropdownSettings:UpdateOptions(NewOptions)
-				TweenService:Create(Dropdown, TweenInfo.new(0.5, Enum.EasingStyle.Quint), {Size = UDim2.new(1, -10,0.353, 180)}):Play()
+				TweenService:Create(Dropdown, TweenInfo.new(0.5, Enum.EasingStyle.Quint), {Size = UDim2.new(1, -10,-0.334, 180)}):Play()
 				for _, DropdownOpt in ipairs(Dropdown.List:GetChildren()) do
 					if DropdownOpt.ClassName == "Frame" and DropdownOpt.Name ~= "Placeholder" then
 						TweenService:Create(DropdownOpt, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {BackgroundTransparency = 1}):Play()
