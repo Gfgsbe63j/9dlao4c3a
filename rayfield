@@ -2183,10 +2183,10 @@ function RayfieldLibrary:CreateWindow(Settings)
 										end
 									end
 
-									TweenService:Create(DropdownOption.Interact.UIStroke, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {Color = Color3.fromRGB(62, 158, 231)}):Play()
-									TweenService:Create(DropdownOption.Interact.Icon, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {ImageTransparency = 0}):Play()
-									TweenService:Create(DropdownOption.Interact.Shadow, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {ImageTransparency = 0.7}):Play()
-									TweenService:Create(DropdownOption.Interact, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {BackgroundColor3 = Color3.fromRGB(43, 105, 159)}):Play()
+									TweenService:Create(DropdownOption2.Interact.UIStroke, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {Color = Color3.fromRGB(62, 158, 231)}):Play()
+									TweenService:Create(DropdownOption2.Interact.Icon, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {ImageTransparency = 0}):Play()
+									TweenService:Create(DropdownOption2.Interact.Shadow, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {ImageTransparency = 0.7}):Play()
+									TweenService:Create(DropdownOption2.Interact, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {BackgroundColor3 = Color3.fromRGB(43, 105, 159)}):Play()
 									-- Debounce = true
 									-- task.wait(0.2)
 									-- TweenService:Create(DropdownOption2.UIStroke, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {Transparency = 0}):Play()
