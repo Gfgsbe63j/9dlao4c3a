@@ -284,6 +284,9 @@ local function SaveConfiguration()
 		if v.Type == "ColorPicker" then
 			Data[i] = PackColor(v.Color)
 		else
+			if i:find("Story") then
+				print(v.CurrentValue)
+			end
 			Data[i] = v.CurrentValue or v.CurrentKeybind or v.CurrentOption or v.Color
 		end
 	end	
@@ -2749,7 +2752,9 @@ function RayfieldLibrary:CreateWindow(Settings)
 					TweenService:Create(Toggle.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {Transparency = 0}):Play()
 				end
 
-				SaveConfiguration()
+				task.delay(0,function()
+					SaveConfiguration()
+				end)
 			end)
 
 			function ToggleSettings:Set(NewToggleValue)
