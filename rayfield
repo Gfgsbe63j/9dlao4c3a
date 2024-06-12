@@ -2704,7 +2704,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 			end)
 
 			local Success, Response = pcall(function()
-				print("called toggle")
 				ToggleSettings.Callback(ToggleSettings.CurrentValue)
 			end)
 
@@ -2739,14 +2738,11 @@ function RayfieldLibrary:CreateWindow(Settings)
 					TweenService:Create(Toggle.UIStroke, TweenInfo.new(0.6, Enum.EasingStyle.Quint), {Transparency = 0}):Play()		
 				end
 
-				print("broo")
 				task.delay(0,function()
-					print("save??")
 					SaveConfiguration()
 				end)
 
 				local Success, Response = pcall(function()
-					print("called toggle 2??")
 					ToggleSettings.Callback(ToggleSettings.CurrentValue)
 				end)
 				if not Success then
