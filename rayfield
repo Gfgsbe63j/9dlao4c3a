@@ -2879,13 +2879,13 @@ function RayfieldLibrary:CreateWindow(Settings)
 			end)
 
 			Slider.Main.Interact.InputBegan:Connect(function(Input)
-				if Slider.UserInputType == Enum.UserInputType.MouseButton1 then 
+				if Input.UserInputType == Enum.UserInputType.MouseButton1 then 
 					Dragging = true 
 				end 
 			end)
 
 			Slider.Main.Interact.InputEnded:Connect(function(Input) 
-				if Slider.UserInputType == Enum.UserInputType.MouseButton1 then 
+				if Input.UserInputType == Enum.UserInputType.MouseButton1 then 
 					Dragging = false 
 				end 
 			end)
