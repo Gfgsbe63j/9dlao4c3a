@@ -2961,6 +2961,16 @@ function RayfieldLibrary:CreateWindow(Settings)
 							Slider.InputFrame.InputBox.Text = tostring(NewValue) .. " " .. SliderSettings.Suffix
 						end
 
+						if Slider.InputFrame.InputBox.Text:len() > 0 then
+							if tonumber(calculateTextSize().X + 24) <= 255 then
+								TweenService:Create(Slider.InputFrame, TweenInfo.new(0.55, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.new(0, calculateTextSize().X + 24, 0, 30)}):Play()
+							else
+								TweenService:Create(Slider.InputFrame, TweenInfo.new(0.55, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.new(0, 255, 0, 30)}):Play()
+							end
+						else
+							TweenService:Create(Slider.InputFrame, TweenInfo.new(0.55, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.new(0, 15 * tonumber(tostring(InputSettings.PlaceholderText):len()) , 0, 30)}):Play()
+						end
+
 						if SliderSettings.CurrentValue ~= NewValue then
 							local Success, Response = pcall(function()
 								SliderSettings.Callback(NewValue)
