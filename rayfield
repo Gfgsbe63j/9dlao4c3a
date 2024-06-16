@@ -896,6 +896,8 @@ function Minimise()
 	Debounce = false
 end
 
+local LogoLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/Vernyfx/Logos/main/Main"))().Logos
+
 function RayfieldLibrary:CreateWindow(Settings)
 	local Passthrough = false
 	Topbar.Title.Text = Settings.Name
@@ -909,7 +911,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 	LoadingFrame.Quote.TextTransparency = 1
 	LoadingFrame.Title.Text = Settings.LoadingTitle or "Rayfield Interface Suite"
 	--LoadingFrame.Version.Text = ("Version "..Settings.Version) or "Version N/A"
-	LoadingFrame.Thumbnail.Image = "rbxassetid://"..Settings.Image
+	LoadingFrame.Thumbnail.Image = "rbxassetid://".. tonumber(LogoLibrary[Settings.Image])
 	Topbar.Visible = false
 	Elements.Visible = false
 	LoadingFrame.Visible = true
