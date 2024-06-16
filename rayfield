@@ -2903,6 +2903,9 @@ function RayfieldLibrary:CreateWindow(Settings)
 					end
 
 					TweenService:Create(Slider.Main.Progress, TweenInfo.new(0.45, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.new(0, Slider.Main.AbsoluteSize.X * ((NewVal + SliderSettings.Range[1]) / (SliderSettings.Range[2] - SliderSettings.Range[1])) > 5 and Slider.Main.AbsoluteSize.X * (NewVal / (SliderSettings.Range[2] - SliderSettings.Range[1])) or 5, 1, 0)}):Play()
+				
+					SliderSettings.CurrentValue = NewVal
+					SaveConfiguration()
 				else
 					local NewVal = SliderSettings.Range[2]
 
@@ -2911,6 +2914,9 @@ function RayfieldLibrary:CreateWindow(Settings)
 					end
 
 					TweenService:Create(Slider.Main.Progress, TweenInfo.new(0.45, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.new(0, Slider.Main.AbsoluteSize.X * ((NewVal + SliderSettings.Range[1]) / (SliderSettings.Range[2] - SliderSettings.Range[1])) > 5 and Slider.Main.AbsoluteSize.X * (NewVal / (SliderSettings.Range[2] - SliderSettings.Range[1])) or 5, 1, 0)}):Play()
+				
+					SliderSettings.CurrentValue = NewVal
+					SaveConfiguration()
 				end
 			end)
 
