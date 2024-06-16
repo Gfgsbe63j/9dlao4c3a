@@ -911,7 +911,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 	LoadingFrame.Quote.TextTransparency = 1
 	LoadingFrame.Title.Text = Settings.LoadingTitle or "Rayfield Interface Suite"
 	--LoadingFrame.Version.Text = ("Version "..Settings.Version) or "Version N/A"
-	LoadingFrame.Thumbnail.Image = "rbxassetid://".. tonumber(LogoLibrary[Settings.Image])
+	LoadingFrame.Thumbnail.Image = "rbxassetid://"..Settings.Image
 	Topbar.Visible = false
 	Elements.Visible = false
 	LoadingFrame.Visible = true
@@ -1200,7 +1200,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 		if Image then
 			TabButton.Title.AnchorPoint = Vector2.new(0, 0.5)
 			TabButton.Title.Position = UDim2.new(0, 37, 0.5, 0)
-			TabButton.Image.Image = "rbxassetid://"..Image
+			TabButton.Image.Image = "rbxassetid://"..tonumber(LogoLibrary[Image])
 			TabButton.Image.Visible = true
 			TabButton.Title.TextXAlignment = Enum.TextXAlignment.Left
 
