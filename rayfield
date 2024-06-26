@@ -1179,11 +1179,12 @@ function RayfieldLibrary:CreateWindow(Settings)
 	-- Tab
 	local FirstTab = false
 	local Window = {}
-	function Window:CreateTab(Name, Image)
+	function Window:CreateTab(Args)
 		local SDone = false
 		local TabButton = TabList.Template:Clone()
-		TabButton.Name = Name
-		TabButton.Title.Text = Name
+		local Image = Args[2]
+		TabButton.Name = Args[1]
+		TabButton.Title.Text = Args[1]
 		TabButton.Parent = TabList
 		TabButton.Title.TextWrapped = false
 		TabButton.Title.RichText = true
