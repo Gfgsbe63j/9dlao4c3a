@@ -1695,7 +1695,6 @@ function RayfieldLibrary:CreateWindow(Settings)
 			local Input = Elements.Template.Input:Clone()
 			Input.Name = InputSettings.Name
 			Input.Title.Text = InputSettings.Name
-            Input.InputFrame.InputBox.Text = InputSettings.CurrentValue
 			Input.Visible = true
 			Input.Parent = TabPage
 
@@ -1772,28 +1771,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 					TweenService:Create(Input.InputFrame, TweenInfo.new(0.55, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Size = UDim2.new(0, 15 * tonumber(tostring(InputSettings.PlaceholderText):len()) , 0, 30)}):Play()
 				end
 			end)
-
-            function InputSettings:Set(NewText)
-                if NewText then
-                    if Input.InputFrame.InputBox.Text ~= NewText then
-                        Input.InputFrame.InputBox.Text = NewText
-
-                        InputSettings.CurrentValue = NewText
-                    end
-                else
-                    Input.InputFrame.InputBox.Text = ""
-                    InputSettings.CurrentValue = ""
-                end
-
-                SaveConfiguration()
-            end
-
-            if Settings.ConfigurationSaving then
-				if Settings.ConfigurationSaving.Enabled and InputSettings.Flag then
-					RayfieldLibrary.Flags[InputSettings.Flag] = InputSettings
-				end
-			end
-
+			
 		end
 
 		-- Dropdown
@@ -1886,6 +1864,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 					Dropdown.List.Visible = false
 					Debounce = false
 				else
+					print("tween 1")
 					TweenService:Create(Dropdown, TweenInfo.new(0.5, Enum.EasingStyle.Quint), {Size = UDim2.new(1, -10,0.353, 180)}):Play()
 					Dropdown.List.Visible = true
 					TweenService:Create(Dropdown.List, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {ScrollBarImageTransparency = 0.7}):Play()
@@ -2286,6 +2265,7 @@ function RayfieldLibrary:CreateWindow(Settings)
 										end
 									end
 
+									print("no work")
 									TweenService:Create(DropdownOption2.UIStroke, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {Transparency = 1}):Play()
 									TweenService:Create(DropdownOption2, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {BackgroundColor3 = Color3.fromRGB(40, 40, 40)}):Play()
 								
@@ -3132,18 +3112,16 @@ Topbar.Hide.MouseButton1Click:Connect(function()
 end)
 
 UserInputService.InputBegan:Connect(function(input, processed)
-    pcall(function()
-        if (Input.KeyCode == Enum.KeyCode.RightShift and not processed) then
-            if Debounce then return end
-            if Hidden then
-                Hidden = false
-                Unhide()
-            else
-                Hidden = true
-                Hide()
-            end
-        end
-    end)
+	if (Input.KeyCode == Enum.KeyCode.RightShift and not processed) then
+		if Debounce then return end
+		if Hidden then
+			Hidden = false
+			Unhide()
+		else
+			Hidden = true
+			Hide()
+		end
+	end
 end)
 
 for _, TopbarButton in ipairs(Topbar:GetChildren()) do
