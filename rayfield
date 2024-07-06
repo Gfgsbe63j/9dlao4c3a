@@ -620,7 +620,7 @@ function RayfieldLibrary:Notify(NotificationSettings)
 			end
 		end
 
-		repeat task.wait(0.001) until ActionCompleted
+		repeat task.wait() until ActionCompleted
 
 		for _, Action in ipairs(Notification.Actions:GetChildren()) do
 			if Action.ClassName == "TextButton" and Action.Name ~= "Template" then
@@ -1670,21 +1670,22 @@ function RayfieldLibrary:CreateWindow(Settings)
 			TweenService:Create(Paragraph.Content, TweenInfo.new(0.7, Enum.EasingStyle.Quint), {TextTransparency = 0}):Play()	
 
 			function ParagraphValue:Set(NewParagraphSettings)
-				Paragraph.Title.Text = NewParagraphSettings.Title
-				Paragraph.Content.Text = NewParagraphSettings.Content.."\n"
-
-				local textSize = TextService:GetTextSize(
-					Paragraph.Content.Text,
-					Paragraph.Content.TextSize,
-					Paragraph.Content.Font,
-					Vector2.new(Paragraph.Content.AbsoluteSize.X, math.huge)
-				)
-
-				Paragraph.Content.Size = UDim2.new(0, 438, 0, textSize.Y)
-				Paragraph.Content.Position = UDim2.new(0.037, 0, 1, 0)
-
-				Paragraph.Size = UDim2.new(1, -10, 0, textSize.Y + 25)
-
+				pcall(function()
+					Paragraph.Title.Text = NewParagraphSettings.Title
+					Paragraph.Content.Text = NewParagraphSettings.Content.."\n"
+	
+					local textSize = TextService:GetTextSize(
+						Paragraph.Content.Text,
+						Paragraph.Content.TextSize,
+						Paragraph.Content.Font,
+						Vector2.new(Paragraph.Content.AbsoluteSize.X, math.huge)
+					)
+	
+					Paragraph.Content.Size = UDim2.new(0, 438, 0, textSize.Y)
+					Paragraph.Content.Position = UDim2.new(0.037, 0, 1, 0)
+	
+					Paragraph.Size = UDim2.new(1, -10, 0, textSize.Y + 25)
+				end)
 			end
 
 			return ParagraphValue
@@ -2035,21 +2036,23 @@ function RayfieldLibrary:CreateWindow(Settings)
 			pcall(function()
 				if Dropdown.List then
 					Dropdown:WaitForChild("List").Search.Search.Changed:Connect(function()
-						if Dropdown.List.Search.Search.Text == "" then
-							for i,v in pairs(Dropdown.List:GetChildren()) do
-								if v:IsA("Frame") and v.Name ~= "Search" and v.Name ~= "Placeholder" then
-									v.Visible = true
+						pcall(function()
+							if Dropdown.List.Search.Search.Text == "" then
+								for i,v in pairs(Dropdown.List:GetChildren()) do
+									if v:IsA("Frame") and v.Name ~= "Search" and v.Name ~= "Placeholder" then
+										v.Visible = true
+									end
 								end
-							end
-						elseif Dropdown.List.Search.Search.Text ~= "" then
-							for i,v in pairs(Dropdown.List:GetChildren()) do
-								if v:IsA("Frame") and v.Name ~= "Search" and v.Name ~= "Placeholder" then
-									if not string.find(v.Title.Text:lower(), Dropdown.List.Search.Search.Text:lower()) then
-										v.Visible = false
+							elseif Dropdown.List.Search.Search.Text ~= "" then
+								for i,v in pairs(Dropdown.List:GetChildren()) do
+									if v:IsA("Frame") and v.Name ~= "Search" and v.Name ~= "Placeholder" then
+										if not string.find(v.Title.Text:lower(), Dropdown.List.Search.Search.Text:lower()) then
+											v.Visible = false
+										end
 									end
 								end
 							end
-						end
+						end)
 					end)
 				end
 			end)
